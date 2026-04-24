@@ -69,7 +69,7 @@ const client = new Client({
 });
 
 const config = {
-    token: "",
+    token: "MTQ4MDY1MTY1MTEwMTQ5NTQxNw.GqMYuP.pPToAy4IVyOqr4kltL9ojYoadf0PlnFAsE09OE",
     probotid: "282859044593598464",
     ownerid: "1092446133944582216",
     ownersid: ["1092446133944582216", "925438817987608596"],
