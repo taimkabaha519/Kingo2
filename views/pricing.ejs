@@ -1,0 +1,45 @@
+<section class="section fade-in">
+  <header class="section-head">
+    <h2>الباقات</h2>
+    <p class="lead">اختر الخطة المناسبة لتشغيل بوتك بثبات وأداء.</p>
+  </header>
+
+  <div class="pricing-grid">
+    <article class="card">
+      <div class="price">$<%= config?.prices?.['1_week'] || 20 %><span class="per">/ أسبوع</span></div>
+      <ul class="features">
+        <li><i class="fas fa-check"></i> موارد مناسبة</li>
+        <li><i class="fas fa-check"></i> دعم أساسي</li>
+        <li><i class="fas fa-check"></i> وحدة تحكم وملفات</li>
+      </ul>
+      <div class="plan-cta">
+        <a class="btn btn-primary" href="/hostings">ابدأ الآن</a>
+      </div>
+    </article>
+
+    <article class="card plan-featured">
+      <div class="price">$<%= config?.prices?.['1_month'] || 50 %><span class="per">/ شهر</span></div>
+      <ul class="features">
+        <li><i class="fas fa-check"></i> موارد أعلى</li>
+        <li><i class="fas fa-check"></i> دعم أسرع</li>
+        <li><i class="fas fa-check"></i> لوحة تحكم كاملة</li>
+      </ul>
+      <div class="plan-cta">
+        <a class="btn btn-primary" href="/hostings">اختر الخطة</a>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="price">$<%= config?.prices?.['3_months'] || 120 %><span class="per">/ 3 شهور</span></div>
+      <ul class="features">
+        <li><i class="fas fa-check"></i> موارد مرتفعة</li>
+        <li><i class="fas fa-check"></i> أولوية دعم</li>
+        <li><i class="fas fa-check"></i> مميزات إضافية</li>
+      </ul>
+      <div class="plan-cta">
+        <a class="btn btn-primary" href="/hostings">ابدأ</a>
+      </div>
+    </article>
+  </div>
+</section>
+

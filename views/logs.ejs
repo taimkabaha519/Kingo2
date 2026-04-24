@@ -1,0 +1,1278 @@
+<div class="logs-page fade-in">
+    <style>
+        .logs-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .logs-header {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, #79c0ff 100%);
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 8px 32px rgba(88, 166, 255, 0.3);
+        }
+
+        .logs-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .logs-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .filters-section {
+            background: var(--bg-med);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .filter-input {
+            padding: 10px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, #79c0ff 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(88, 166, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff4757 0%, #ff6b7a 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 71, 87, 0.4);
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-med);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .logs-table-container {
+            background: var(--bg-med);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .logs-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .logs-table th {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            padding: 15px 12px;
+            text-align: right;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logs-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+            vertical-align: top;
+        }
+
+        .logs-table tbody tr:hover {
+            background: rgba(88, 166, 255, 0.05);
+        }
+
+        .log-action {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .log-action.login { background: rgba(46, 213, 115, 0.2); color: #2ed573; }
+        .log-action.logout { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
+        .log-action.hosting_create { background: rgba(88, 166, 255, 0.2); color: #58a6ff; }
+        .log-action.hosting_delete { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
+        .log-action.hosting_start { background: rgba(46, 213, 115, 0.2); color: #2ed573; }
+        .log-action.hosting_stop { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+        .log-action.file_upload { background: rgba(88, 166, 255, 0.2); color: #58a6ff; }
+        .log-action.file_delete { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
+        .log-action.console_command { background: rgba(108, 117, 125, 0.2); color: #6c757d; }
+        .log-action.payment_success { background: rgba(46, 213, 115, 0.2); color: #2ed573; }
+        .log-action.payment_failed { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
+        .log-action.admin_action { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+        .log-action.user_ban { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
+        .log-action.user_unban { background: rgba(46, 213, 115, 0.2); color: #2ed573; }
+        .log-action.api_call { background: rgba(108, 117, 125, 0.2); color: #6c757d; }
+        .log-action.error { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
+        .log-action.page_visit { background: rgba(108, 117, 125, 0.2); color: #6c757d; }
+
+        .log-severity {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .log-severity.info { background: rgba(88, 166, 255, 0.2); color: #58a6ff; }
+        .log-severity.warning { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+        .log-severity.error { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
+        .log-severity.critical { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+
+        .log-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .log-status.success { background: rgba(46, 213, 115, 0.2); color: #2ed573; }
+        .log-status.failed { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
+        .log-status.pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+        }
+
+        .user-name {
+            font-weight: 500;
+        }
+
+        .ip-info {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .location-info {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .log-description {
+            max-width: 300px;
+            word-wrap: break-word;
+        }
+
+        .log-details {
+            max-width: 200px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: var(--border-color);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .current-page {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .no-logs {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .export-section {
+            background: var(--bg-med);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .export-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Terminal Styles */
+        .terminal-container {
+            background: #1a1a1a;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            font-family: 'Courier New', monospace;
+        }
+
+        .terminal-header {
+            background: #2d2d2d;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #404040;
+        }
+
+        .terminal-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .terminal-control {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-control.close {
+            background: #ff5f56;
+        }
+
+        .terminal-control.minimize {
+            background: #ffbd2e;
+        }
+
+        .terminal-control.maximize {
+            background: #27ca3f;
+        }
+
+        .terminal-title {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .terminal-body {
+            background: #1a1a1a;
+            padding: 15px;
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .terminal-output {
+            margin-bottom: 15px;
+        }
+
+        .terminal-line {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .terminal-prompt {
+            color: #00ff00;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .terminal-text {
+            color: #ffffff;
+            font-size: 13px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .terminal-input-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-top: 1px solid #404040;
+            padding-top: 15px;
+        }
+
+        .terminal-input {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            outline: none;
+            flex: 1;
+        }
+
+        .terminal-input::placeholder {
+            color: #666666;
+        }
+
+        /* Terminal log styles */
+        .terminal-log {
+            margin-bottom: 8px;
+        }
+
+        .terminal-log.error {
+            color: #ff6b6b;
+        }
+
+        .terminal-log.warning {
+            color: #ffd93d;
+        }
+
+        .terminal-log.info {
+            color: #6bcf7f;
+        }
+
+        .terminal-log.critical {
+            color: #ff4757;
+            font-weight: bold;
+        }
+
+        .terminal-timestamp {
+            color: #888888;
+            font-size: 11px;
+        }
+
+        .terminal-user {
+            color: #74b9ff;
+            font-weight: bold;
+        }
+
+        .terminal-ip {
+            color: #a29bfe;
+        }
+
+        .terminal-action {
+            color: #fd79a8;
+            font-weight: bold;
+        }
+
+        .view-options {
+            margin-bottom: 20px;
+        }
+
+        .view-options .btn {
+            margin: 0 5px;
+        }
+
+        .view-options .btn.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .logs-table {
+                font-size: 0.8rem;
+            }
+            
+            .logs-table th,
+            .logs-table td {
+                padding: 8px 6px;
+            }
+
+            .terminal-body {
+                min-height: 300px;
+                max-height: 400px;
+            }
+        }
+    </style>
+
+    <div class="logs-container">
+        <!-- العنوان الرئيسي -->
+        <div class="logs-header">
+            <h1><i class="fas fa-clipboard-list"></i> سجلات الموقع</h1>
+            <p>مراقبة جميع الأنشطة والعمليات في الموقع</p>
+        </div>
+
+        <!-- قسم الإحصائيات -->
+        <div class="stats-section" id="stats-section">
+            <div class="stat-card">
+                <div class="stat-number" id="total-logs">-</div>
+                <div class="stat-label">إجمالي السجلات</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="unique-users">-</div>
+                <div class="stat-label">مستخدمين فريدين</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="unique-ips">-</div>
+                <div class="stat-label">عنوان IP فريد</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="errors-count">-</div>
+                <div class="stat-label">أخطاء</div>
+            </div>
+        </div>
+
+        <!-- قسم التصدير -->
+        <div class="export-section">
+            <h3 style="text-align: center; margin-bottom: 15px; color: var(--text-primary);">
+                <i class="fas fa-download"></i> تصدير السجلات
+            </h3>
+            <div class="export-actions">
+                <button class="btn btn-primary" onclick="exportLogs('csv')">
+                    <i class="fas fa-file-csv"></i> تصدير CSV
+                </button>
+                <button class="btn btn-primary" onclick="exportLogs('json')">
+                    <i class="fas fa-file-code"></i> تصدير JSON
+                </button>
+                <button class="btn btn-secondary" onclick="clearOldLogs()">
+                    <i class="fas fa-trash"></i> مسح السجلات القديمة
+                </button>
+            </div>
+        </div>
+
+        <!-- قسم الفلاتر -->
+        <div class="filters-section">
+            <h3 style="margin-bottom: 20px; color: var(--text-primary);">
+                <i class="fas fa-filter"></i> فلاتر البحث
+            </h3>
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">البحث</label>
+                    <input type="text" class="filter-input" id="search-input" placeholder="ابحث في السجلات...">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">المستخدم</label>
+                    <input type="text" class="filter-input" id="user-filter" placeholder="اسم المستخدم">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">عنوان IP</label>
+                    <input type="text" class="filter-input" id="ip-filter" placeholder="192.168.1.1">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">نوع العملية</label>
+                    <select class="filter-input" id="action-filter">
+                        <option value="">جميع العمليات</option>
+                        <option value="login">تسجيل الدخول</option>
+                        <option value="logout">تسجيل الخروج</option>
+                        <option value="hosting_create">إنشاء استضافة</option>
+                        <option value="hosting_delete">حذف استضافة</option>
+                        <option value="hosting_start">تشغيل البوت</option>
+                        <option value="hosting_stop">إيقاف البوت</option>
+                        <option value="file_upload">رفع ملف</option>
+                        <option value="file_delete">حذف ملف</option>
+                        <option value="console_command">أمر كونسل</option>
+                        <option value="payment_success">دفع ناجح</option>
+                        <option value="payment_failed">دفع فاشل</option>
+                        <option value="admin_action">عمل إداري</option>
+                        <option value="user_ban">حظر مستخدم</option>
+                        <option value="user_unban">إلغاء حظر</option>
+                        <option value="api_call">استدعاء API</option>
+                        <option value="error">خطأ</option>
+                        <option value="page_visit">زيارة صفحة</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">مستوى الخطورة</label>
+                    <select class="filter-input" id="severity-filter">
+                        <option value="">جميع المستويات</option>
+                        <option value="info">معلومات</option>
+                        <option value="warning">تحذير</option>
+                        <option value="error">خطأ</option>
+                        <option value="critical">حرج</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">الحالة</label>
+                    <select class="filter-input" id="status-filter">
+                        <option value="">جميع الحالات</option>
+                        <option value="success">نجح</option>
+                        <option value="failed">فشل</option>
+                        <option value="pending">في الانتظار</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">من تاريخ</label>
+                    <input type="datetime-local" class="filter-input" id="start-date">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">إلى تاريخ</label>
+                    <input type="datetime-local" class="filter-input" id="end-date">
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" onclick="applyFilters()">
+                    <i class="fas fa-search"></i> تطبيق الفلاتر
+                </button>
+                <button class="btn btn-secondary" onclick="clearFilters()">
+                    <i class="fas fa-times"></i> مسح الفلاتر
+                </button>
+                <button class="btn btn-danger" onclick="refreshLogs()">
+                    <i class="fas fa-sync"></i> تحديث
+                </button>
+            </div>
+        </div>
+
+        <!-- خيارات العرض -->
+        <div class="view-options" style="margin-bottom: 20px; text-align: center;">
+            <button class="btn btn-secondary" id="table-view-btn" onclick="switchView('table')">
+                <i class="fas fa-table"></i> عرض الجدول
+            </button>
+            <button class="btn btn-secondary" id="terminal-view-btn" onclick="switchView('terminal')">
+                <i class="fas fa-terminal"></i> عرض Terminal
+            </button>
+        </div>
+
+        <!-- جدول السجلات -->
+        <div class="logs-table-container" id="table-view">
+            <div id="logs-loading" class="loading" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i> جاري تحميل السجلات...
+            </div>
+            <div id="logs-content">
+                <table class="logs-table">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>المستخدم</th>
+                            <th>IP</th>
+                            <th>الموقع</th>
+                            <th>العملية</th>
+                            <th>الوصف</th>
+                            <th>المستوى</th>
+                            <th>الحالة</th>
+                            <th>التفاصيل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-table-body">
+                        <!-- سيتم ملؤها بـ JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="no-logs" class="no-logs" style="display: none;">
+                <i class="fas fa-inbox"></i> لا توجد سجلات
+            </div>
+        </div>
+
+        <!-- Terminal View -->
+        <div class="terminal-container" id="terminal-view" style="display: none;">
+            <div class="terminal-header">
+                <div class="terminal-controls">
+                    <div class="terminal-control close"></div>
+                    <div class="terminal-control minimize"></div>
+                    <div class="terminal-control maximize"></div>
+                </div>
+                <div class="terminal-title">
+                    <i class="fas fa-terminal"></i> Site Logs Terminal
+                </div>
+            </div>
+            <div class="terminal-body">
+                <div class="terminal-output" id="terminal-output">
+                    <div class="terminal-line">
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-text">جاري تحميل السجلات...</span>
+                    </div>
+                </div>
+                <div class="terminal-input-line">
+                    <span class="terminal-prompt">$</span>
+                    <input type="text" class="terminal-input" id="terminal-input" placeholder="اكتب أمر للبحث في السجلات...">
+                </div>
+            </div>
+        </div>
+
+        <!-- التصفح -->
+        <div class="pagination" id="pagination" style="display: none;">
+            <button onclick="changePage(-1)" id="prev-btn">
+                <i class="fas fa-chevron-right"></i> السابق
+            </button>
+            <span id="page-info">صفحة 1 من 1</span>
+            <button onclick="changePage(1)" id="next-btn">
+                التالي <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        let currentFilters = {};
+        let currentView = 'table';
+        let terminalHistory = [];
+        let terminalHistoryIndex = -1;
+
+        // تحميل السجلات عند بدء الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStats();
+            loadLogs();
+            setupTerminal();
+            
+            // تحديث تلقائي كل 30 ثانية
+            setInterval(() => {
+                loadStats();
+                loadLogs();
+                if (currentView === 'terminal') {
+                    loadTerminalLogs();
+                }
+            }, 30000);
+        });
+
+        // تحميل الإحصائيات
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/admin/logs/stats');
+                const stats = await response.json();
+                
+                document.getElementById('total-logs').textContent = stats.total || 0;
+                document.getElementById('unique-users').textContent = stats.uniqueUsersCount || 0;
+                document.getElementById('unique-ips').textContent = stats.uniqueIPsCount || 0;
+                document.getElementById('errors-count').textContent = stats.errorsCount || 0;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // تحميل السجلات
+        async function loadLogs(page = 1) {
+            try {
+                document.getElementById('logs-loading').style.display = 'block';
+                document.getElementById('logs-content').style.display = 'none';
+                document.getElementById('no-logs').style.display = 'none';
+                
+                const params = new URLSearchParams({
+                    page: page,
+                    limit: 50,
+                    ...currentFilters
+                });
+                
+                const response = await fetch(`/api/admin/logs?${params}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayLogs(data.logs);
+                    updatePagination(data.pagination);
+                } else {
+                    showError('خطأ في تحميل السجلات');
+                }
+            } catch (error) {
+                console.error('Error loading logs:', error);
+                showError('خطأ في تحميل السجلات');
+            } finally {
+                document.getElementById('logs-loading').style.display = 'none';
+                document.getElementById('logs-content').style.display = 'block';
+            }
+        }
+
+        // عرض السجلات
+        function displayLogs(logs) {
+            const tbody = document.getElementById('logs-table-body');
+            tbody.innerHTML = '';
+            
+            if (logs.length === 0) {
+                document.getElementById('no-logs').style.display = 'block';
+                document.getElementById('logs-content').style.display = 'none';
+                return;
+            }
+            
+            logs.forEach(log => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(log.timestamp)}</td>
+                    <td>
+                        <div class="user-info">
+                            ${log.userAvatar ? `<img src="${log.userAvatar}" class="user-avatar" alt="Avatar">` : '<i class="fas fa-user-circle" style="font-size: 24px; color: var(--text-secondary);"></i>'}
+                            <span class="user-name">${log.username || 'مجهول'}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="ip-info">${log.ipAddress}</div>
+                    </td>
+                    <td>
+                        <div class="location-info">${log.city}, ${log.country}</div>
+                    </td>
+                    <td>
+                        <span class="log-action ${log.action}">${getActionText(log.action)}</span>
+                    </td>
+                    <td>
+                        <div class="log-description">${log.description}</div>
+                    </td>
+                    <td>
+                        <span class="log-severity ${log.severity}">${getSeverityText(log.severity)}</span>
+                    </td>
+                    <td>
+                        <span class="log-status ${log.status}">${getStatusText(log.status)}</span>
+                    </td>
+                    <td>
+                        <div class="log-details">
+                            ${log.method} ${log.statusCode}
+                            ${log.details.duration ? `<br>${log.details.duration}ms` : ''}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // تحديث التصفح
+        function updatePagination(pagination) {
+            currentPage = pagination.currentPage;
+            totalPages = pagination.totalPages;
+            
+            const paginationDiv = document.getElementById('pagination');
+            const pageInfo = document.getElementById('page-info');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            if (totalPages > 1) {
+                paginationDiv.style.display = 'flex';
+                pageInfo.textContent = `صفحة ${currentPage} من ${totalPages}`;
+                prevBtn.disabled = currentPage <= 1;
+                nextBtn.disabled = currentPage >= totalPages;
+            } else {
+                paginationDiv.style.display = 'none';
+            }
+        }
+
+        // تغيير الصفحة
+        function changePage(direction) {
+            const newPage = currentPage + direction;
+            if (newPage >= 1 && newPage <= totalPages) {
+                loadLogs(newPage);
+            }
+        }
+
+        // تطبيق الفلاتر
+        function applyFilters() {
+            currentFilters = {
+                search: document.getElementById('search-input').value,
+                userId: document.getElementById('user-filter').value,
+                ipAddress: document.getElementById('ip-filter').value,
+                action: document.getElementById('action-filter').value,
+                severity: document.getElementById('severity-filter').value,
+                status: document.getElementById('status-filter').value,
+                startDate: document.getElementById('start-date').value,
+                endDate: document.getElementById('end-date').value
+            };
+            
+            // إزالة القيم الفارغة
+            Object.keys(currentFilters).forEach(key => {
+                if (!currentFilters[key]) {
+                    delete currentFilters[key];
+                }
+            });
+            
+            currentPage = 1;
+            loadLogs();
+        }
+
+        // مسح الفلاتر
+        function clearFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('user-filter').value = '';
+            document.getElementById('ip-filter').value = '';
+            document.getElementById('action-filter').value = '';
+            document.getElementById('severity-filter').value = '';
+            document.getElementById('status-filter').value = '';
+            document.getElementById('start-date').value = '';
+            document.getElementById('end-date').value = '';
+            
+            currentFilters = {};
+            currentPage = 1;
+            loadLogs();
+        }
+
+        // تحديث السجلات
+        function refreshLogs() {
+            loadStats();
+            loadLogs(currentPage);
+        }
+
+        // تصدير السجلات
+        async function exportLogs(format) {
+            try {
+                const params = new URLSearchParams({
+                    format: format,
+                    ...currentFilters
+                });
+                
+                const response = await fetch(`/api/admin/logs/export?${params}`);
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `logs-${new Date().toISOString().split('T')[0]}.${format}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    showError('خطأ في تصدير السجلات');
+                }
+            } catch (error) {
+                console.error('Error exporting logs:', error);
+                showError('خطأ في تصدير السجلات');
+            }
+        }
+
+        // مسح السجلات القديمة
+        async function clearOldLogs() {
+            if (!confirm('هل أنت متأكد من مسح السجلات القديمة (أكثر من 30 يوم)؟')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/logs/clear-old', {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showSuccess(`تم مسح ${result.deletedCount} سجل قديم`);
+                    refreshLogs();
+                } else {
+                    showError('خطأ في مسح السجلات القديمة');
+                }
+            } catch (error) {
+                console.error('Error clearing old logs:', error);
+                showError('خطأ في مسح السجلات القديمة');
+            }
+        }
+
+        // دوال مساعدة
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('ar-SA', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        function getActionText(action) {
+            const actions = {
+                'login': 'دخول',
+                'logout': 'خروج',
+                'hosting_create': 'إنشاء استضافة',
+                'hosting_delete': 'حذف استضافة',
+                'hosting_start': 'تشغيل',
+                'hosting_stop': 'إيقاف',
+                'hosting_restart': 'إعادة تشغيل',
+                'file_upload': 'رفع ملف',
+                'file_delete': 'حذف ملف',
+                'file_edit': 'تعديل ملف',
+                'file_download': 'تحميل ملف',
+                'console_command': 'أمر كونسل',
+                'payment_success': 'دفع ناجح',
+                'payment_failed': 'دفع فاشل',
+                'admin_action': 'عمل إداري',
+                'user_ban': 'حظر',
+                'user_unban': 'إلغاء حظر',
+                'api_call': 'API',
+                'error': 'خطأ',
+                'page_visit': 'زيارة صفحة'
+            };
+            return actions[action] || action;
+        }
+
+        function getSeverityText(severity) {
+            const severities = {
+                'info': 'معلومات',
+                'warning': 'تحذير',
+                'error': 'خطأ',
+                'critical': 'حرج'
+            };
+            return severities[severity] || severity;
+        }
+
+        function getStatusText(status) {
+            const statuses = {
+                'success': 'نجح',
+                'failed': 'فشل',
+                'pending': 'في الانتظار'
+            };
+            return statuses[status] || status;
+        }
+
+        function showSuccess(message) {
+            // يمكن إضافة toast notification هنا
+            alert('✅ ' + message);
+        }
+
+        function showError(message) {
+            // يمكن إضافة toast notification هنا
+            alert('❌ ' + message);
+        }
+
+        // Terminal Functions
+        function switchView(view) {
+            currentView = view;
+            
+            // Update buttons
+            document.getElementById('table-view-btn').classList.toggle('active', view === 'table');
+            document.getElementById('terminal-view-btn').classList.toggle('active', view === 'terminal');
+            
+            // Show/hide views
+            document.getElementById('table-view').style.display = view === 'table' ? 'block' : 'none';
+            document.getElementById('terminal-view').style.display = view === 'terminal' ? 'block' : 'none';
+            
+            if (view === 'terminal') {
+                loadTerminalLogs();
+            }
+        }
+
+        function setupTerminal() {
+            const terminalInput = document.getElementById('terminal-input');
+            
+            terminalInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    executeTerminalCommand(this.value);
+                    this.value = '';
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (terminalHistoryIndex > 0) {
+                        terminalHistoryIndex--;
+                        this.value = terminalHistory[terminalHistoryIndex];
+                    }
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (terminalHistoryIndex < terminalHistory.length - 1) {
+                        terminalHistoryIndex++;
+                        this.value = terminalHistory[terminalHistoryIndex];
+                    } else {
+                        terminalHistoryIndex = terminalHistory.length;
+                        this.value = '';
+                    }
+                }
+            });
+        }
+
+        async function executeTerminalCommand(command) {
+            if (!command.trim()) return;
+            
+            // Add to history
+            terminalHistory.push(command);
+            terminalHistoryIndex = terminalHistory.length;
+            
+            // Show command
+            addTerminalLine(`$ ${command}`, 'command');
+            
+            // Parse command
+            const parts = command.trim().split(' ');
+            const cmd = parts[0].toLowerCase();
+            
+            switch (cmd) {
+                case 'help':
+                    showTerminalHelp();
+                    break;
+                case 'clear':
+                    clearTerminal();
+                    break;
+                case 'search':
+                    const searchTerm = parts.slice(1).join(' ');
+                    searchTerminalLogs(searchTerm);
+                    break;
+                case 'filter':
+                    const filterType = parts[1];
+                    const filterValue = parts.slice(2).join(' ');
+                    filterTerminalLogs(filterType, filterValue);
+                    break;
+                case 'stats':
+                    showTerminalStats();
+                    break;
+                case 'recent':
+                    const limit = parts[1] ? parseInt(parts[1]) : 10;
+                    loadTerminalLogs(limit);
+                    break;
+                default:
+                    addTerminalLine(`Command not found: ${cmd}. Type 'help' for available commands.`, 'error');
+            }
+        }
+
+        function addTerminalLine(text, type = 'normal') {
+            const terminalOutput = document.getElementById('terminal-output');
+            const line = document.createElement('div');
+            line.className = `terminal-line terminal-log ${type}`;
+            
+            if (type === 'command') {
+                line.innerHTML = `<span class="terminal-prompt">$</span><span class="terminal-text">${text}</span>`;
+            } else {
+                line.innerHTML = `<span class="terminal-text">${text}</span>`;
+            }
+            
+            terminalOutput.appendChild(line);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+
+        function clearTerminal() {
+            const terminalOutput = document.getElementById('terminal-output');
+            terminalOutput.innerHTML = '';
+        }
+
+        function showTerminalHelp() {
+            const helpText = `
+Available commands:
+  help                    - Show this help message
+  clear                   - Clear terminal output
+  search <term>           - Search in logs
+  filter <type> <value>   - Filter logs (user, ip, action, severity)
+  stats                   - Show statistics
+  recent [limit]          - Show recent logs (default: 10)
+            `.trim();
+            
+            addTerminalLine(helpText, 'info');
+        }
+
+        async function loadTerminalLogs(limit = 50) {
+            try {
+                const params = new URLSearchParams({
+                    limit: limit,
+                    ...currentFilters
+                });
+                
+                const response = await fetch(`/api/admin/logs?${params}`);
+                const data = await response.json();
+                
+                if (data.success && data.logs.length > 0) {
+                    clearTerminal();
+                    data.logs.forEach(log => {
+                        displayTerminalLog(log);
+                    });
+                } else {
+                    addTerminalLine('No logs found', 'info');
+                }
+            } catch (error) {
+                addTerminalLine(`Error loading logs: ${error.message}`, 'error');
+            }
+        }
+
+        function displayTerminalLog(log) {
+            const timestamp = new Date(log.timestamp).toLocaleString('ar-SA');
+            const user = log.username || 'مجهول';
+            const ip = log.ipAddress;
+            const action = getActionText(log.action);
+            const description = log.description;
+            const severity = log.severity;
+            
+            const logLine = `[${timestamp}] ${user}@${ip} - ${action}: ${description}`;
+            addTerminalLine(logLine, severity);
+        }
+
+        async function searchTerminalLogs(searchTerm) {
+            if (!searchTerm) {
+                addTerminalLine('Please provide a search term', 'error');
+                return;
+            }
+            
+            try {
+                const params = new URLSearchParams({
+                    search: searchTerm,
+                    limit: 50
+                });
+                
+                const response = await fetch(`/api/admin/logs?${params}`);
+                const data = await response.json();
+                
+                if (data.success && data.logs.length > 0) {
+                    clearTerminal();
+                    addTerminalLine(`Search results for: ${searchTerm}`, 'info');
+                    data.logs.forEach(log => {
+                        displayTerminalLog(log);
+                    });
+                } else {
+                    addTerminalLine(`No results found for: ${searchTerm}`, 'info');
+                }
+            } catch (error) {
+                addTerminalLine(`Search error: ${error.message}`, 'error');
+            }
+        }
+
+        async function filterTerminalLogs(filterType, filterValue) {
+            if (!filterType || !filterValue) {
+                addTerminalLine('Usage: filter <type> <value>', 'error');
+                return;
+            }
+            
+            try {
+                const params = new URLSearchParams({
+                    [filterType]: filterValue,
+                    limit: 50
+                });
+                
+                const response = await fetch(`/api/admin/logs?${params}`);
+                const data = await response.json();
+                
+                if (data.success && data.logs.length > 0) {
+                    clearTerminal();
+                    addTerminalLine(`Filtered by ${filterType}: ${filterValue}`, 'info');
+                    data.logs.forEach(log => {
+                        displayTerminalLog(log);
+                    });
+                } else {
+                    addTerminalLine(`No results found for ${filterType}: ${filterValue}`, 'info');
+                }
+            } catch (error) {
+                addTerminalLine(`Filter error: ${error.message}`, 'error');
+            }
+        }
+
+        async function showTerminalStats() {
+            try {
+                const response = await fetch('/api/admin/logs/stats');
+                const stats = await response.json();
+                
+                const statsText = `
+Statistics:
+  Total Logs: ${stats.total || 0}
+  Unique Users: ${stats.uniqueUsersCount || 0}
+  Unique IPs: ${stats.uniqueIPsCount || 0}
+  Errors: ${stats.errorsCount || 0}
+                `.trim();
+                
+                addTerminalLine(statsText, 'info');
+            } catch (error) {
+                addTerminalLine(`Stats error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</div>

@@ -1,0 +1,554 @@
+<div class="admin-page fade-in">
+<div class="container-fluid">
+    <div class="admin-header">
+        <h2 class="slide-up"><i class="fas fa-cogs me-2"></i> تحكم بالهوستات</h2>
+        <div class="d-flex gap-2">
+            <a href="/admin" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> العودة للوحة الإدارة
+            </a>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-server fa-2x text-primary mb-2"></i>
+                    <h4><%= hostings.length %></h4>
+                    <p class="text-muted mb-0">إجمالي الهوستات</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-play-circle fa-2x text-success mb-2"></i>
+                    <h4><%= hostings.filter(h => h.status === 'running').length %></h4>
+                    <p class="text-muted mb-0">هوستات نشطة</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-pause-circle fa-2x text-warning mb-2"></i>
+                    <h4><%= hostings.filter(h => h.status === 'stopped').length %></h4>
+                    <p class="text-muted mb-0">هوستات متوقفة</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x text-info mb-2"></i>
+                    <h4><%= new Set(hostings.map(h => h.owner?.id).filter(Boolean)).size %></h4>
+                    <p class="text-muted mb-0">مستخدمين فريدين</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hostings Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i> قائمة جميع الهوستات</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>اسم الهوست</th>
+                            <th>المالك</th>
+                            <th>نوع الخدمة</th>
+                            <th>الحالة</th>
+                            <th>تاريخ الانتهاء</th>
+                            <th>المساحة المستخدمة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% hostings.forEach(hosting => { %>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-server me-2 text-primary"></i>
+                                    <strong><%= hosting.name %></strong>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <% if (hosting.owner && hosting.owner.avatar) { %>
+                                    <img src="<%= hosting.owner.avatar %>" alt="Avatar" class="rounded-circle me-2" width="24" height="24">
+                                    <% } %>
+                                    <span><%= hosting.owner?.username || 'غير محدد' %></span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">
+                                    <%= hosting.serviceType || 'discord' %>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge <%= hosting.status === 'running' ? 'bg-success' : 'bg-danger' %>">
+                                    <%= hosting.status === 'running' ? 'نشط' : 'متوقف' %>
+                                </span>
+                            </td>
+                            <td>
+                                <% if (hosting.expiryDate) { %>
+                                    <% const expiryDate = new Date(hosting.expiryDate); %>
+                                    <% const isExpired = expiryDate < new Date(); %>
+                                    <span class="<%= isExpired ? 'text-danger' : 'text-success' %>">
+                                        <%= expiryDate.toLocaleDateString('ar-SA') %>
+                                        <% if (isExpired) { %>
+                                            <i class="fas fa-exclamation-triangle ms-1"></i>
+                                        <% } %>
+                                    </span>
+                                <% } else { %>
+                                    <span class="text-muted">غير محدد</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <span class="text-muted"><%= hosting.usedStorage || '0 KB' %></span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <% const hostingId = hosting._id || hosting.id; %>
+                                    <button class="btn btn-sm btn-success" onclick="renewHosting('<%= hostingId %>')" title="تجديد المدة">
+                                        <i class="fas fa-calendar-plus"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-info" onclick="viewHosting('<%= hostingId %>')" title="عرض التفاصيل">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-secondary" onclick="viewFiles('<%= hostingId %>')" title="عرض الملفات">
+                                        <i class="fas fa-folder-open"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-dark" onclick="viewConsole('<%= hostingId %>')" title="عرض الكونسل">
+                                        <i class="fas fa-terminal"></i>
+                                    </button>
+                                    <% if (hosting.status === 'running') { %>
+                                    <button class="btn btn-sm btn-warning" onclick="stopHosting('<%= hostingId %>')" title="إيقاف الهوست">
+                                        <i class="fas fa-pause"></i>
+                                    </button>
+                                    <% } else { %>
+                                    <button class="btn btn-sm btn-primary" onclick="startHosting('<%= hostingId %>')" title="تشغيل الهوست">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    <% } %>
+                                </div>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Renew Hosting Modal -->
+<div class="modal fade" id="renewModal" tabindex="-1" aria-labelledby="renewModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="renewModalLabel">
+                    <i class="fas fa-calendar-plus me-2"></i>تجديد مدة الهوست
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="renewForm">
+                    <div class="mb-3">
+                        <label for="renewDays" class="form-label">عدد الأيام للتجديد:</label>
+                        <select class="form-select" id="renewDays" required>
+                            <option value="7">7 أيام</option>
+                            <option value="15">15 يوم</option>
+                            <option value="30" selected>30 يوم</option>
+                            <option value="60">60 يوم</option>
+                            <option value="90">90 يوم</option>
+                            <option value="180">6 أشهر</option>
+                            <option value="365">سنة واحدة</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="customDays" class="form-label">أو أدخل عدد أيام مخصص:</label>
+                        <input type="number" class="form-control" id="customDays" min="1" max="3650" placeholder="أدخل عدد الأيام">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-success" onclick="confirmRenew()">
+                    <i class="fas fa-calendar-plus me-1"></i>تجديد المدة
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentHostingId = null;
+
+function renewHosting(hostingId) {
+    currentHostingId = hostingId;
+    console.log('Opening renew modal for hosting:', hostingId);
+    
+    // التأكد من أن المودال مخفي أولاً
+    const modalElement = document.getElementById('renewModal');
+    modalElement.style.display = 'none';
+    modalElement.classList.remove('show');
+    
+    // إظهار المودال
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+}
+
+function confirmRenew() {
+    if (!currentHostingId) return;
+    
+    const renewDaysSelect = document.getElementById('renewDays');
+    const customDaysInput = document.getElementById('customDays');
+    
+    let days = parseInt(renewDaysSelect.value);
+    
+    // إذا تم إدخال أيام مخصصة، استخدمها
+    if (customDaysInput.value && customDaysInput.value > 0) {
+        days = parseInt(customDaysInput.value);
+    }
+    
+    if (days <= 0) {
+        showToast('يرجى إدخال عدد أيام صحيح', 'error');
+        return;
+    }
+    
+    // إظهار loading
+    const confirmBtn = document.querySelector('#renewModal .btn-success');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جاري التجديد...';
+    confirmBtn.disabled = true;
+    
+    // إرسال طلب التجديد
+    fetch(`/api/admin/renew-hosting/${currentHostingId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ days: days })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+            // إغلاق المودال
+            const modal = bootstrap.Modal.getInstance(document.getElementById('renewModal'));
+            modal.hide();
+            // إعادة تحميل الصفحة لعرض التحديثات
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showToast(data.message || 'حدث خطأ في تجديد المدة', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('حدث خطأ في تجديد المدة', 'error');
+    })
+    .finally(() => {
+        // إعادة تعيين الزر
+        confirmBtn.innerHTML = originalText;
+        confirmBtn.disabled = false;
+    });
+}
+
+function viewHosting(hostingId) {
+    window.open(`/hosting/${hostingId}`, '_blank');
+}
+
+function viewFiles(hostingId) {
+    // التأكد من أن hostingId صحيح
+    if (!hostingId) {
+        showToast('خطأ: معرف الهوست غير صحيح', 'error');
+        return;
+    }
+    console.log('Opening files for hosting:', hostingId);
+    console.log('URL will be:', `/files/${hostingId}`);
+    
+    // إضافة معاملات إضافية للتشخيص
+    const url = `/files/${hostingId}`;
+    console.log('Final URL:', url);
+    
+    window.open(url, '_blank');
+}
+
+function viewConsole(hostingId) {
+    // التأكد من أن hostingId صحيح
+    if (!hostingId) {
+        showToast('خطأ: معرف الهوست غير صحيح', 'error');
+        return;
+    }
+    console.log('Opening console for hosting:', hostingId);
+    window.open(`/console/${hostingId}`, '_blank');
+}
+
+function startHosting(hostingId) {
+    if (confirm('هل أنت متأكد من تشغيل هذا الهوست؟')) {
+        fetch(`/api/hosting/${hostingId}/start`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('تم تشغيل الهوست بنجاح', 'success');
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                showToast(data.message || 'حدث خطأ في تشغيل الهوست', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('حدث خطأ في تشغيل الهوست', 'error');
+        });
+    }
+}
+
+function stopHosting(hostingId) {
+    if (confirm('هل أنت متأكد من إيقاف هذا الهوست؟')) {
+        fetch(`/api/hosting/${hostingId}/stop`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('تم إيقاف الهوست بنجاح', 'success');
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                showToast(data.message || 'حدث خطأ في إيقاف الهوست', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('حدث خطأ في إيقاف الهوست', 'error');
+        });
+    }
+}
+
+// Toast notification function
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast-message ${type}`;
+    toast.textContent = message;
+    
+    // إضافة الأنماط
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 6px;
+        z-index: 10000;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        animation: slideInRight 0.3s ease;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// إضافة CSS للأنيميشن
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+
+// إخفاء المودال عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('renewModal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+    
+    // إخفاء backdrop إذا كان موجود
+    const backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) {
+        backdrop.remove();
+    }
+});
+</script>
+
+<style>
+.admin-page {
+    padding: 20px;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #30363d;
+}
+
+.admin-header h2 {
+    color: #c9d1d9;
+    margin: 0;
+}
+
+.card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background: #21262d;
+    border-bottom: 1px solid #30363d;
+    padding: 15px 20px;
+}
+
+.card-header h5 {
+    color: #c9d1d9;
+    margin: 0;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.table {
+    color: #c9d1d9;
+}
+
+.table th {
+    background: #21262d;
+    border-bottom: 2px solid #30363d;
+    color: #c9d1d9;
+    font-weight: 600;
+}
+
+.table td {
+    border-bottom: 1px solid #30363d;
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background: #21262d;
+}
+
+.badge {
+    font-size: 0.8em;
+    padding: 6px 12px;
+}
+
+.btn-group .btn {
+    margin: 0 2px;
+}
+
+.btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+}
+
+.btn-group .btn-sm {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+}
+
+/* تحسين عرض الأزرار في الجدول */
+.table td {
+    white-space: nowrap;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.modal-content {
+    background: #161b22;
+    border: 1px solid #30363d;
+}
+
+/* إخفاء المودال افتراضياً */
+.modal {
+    display: none !important;
+}
+
+.modal.show {
+    display: block !important;
+}
+
+.modal-header {
+    background: #21262d;
+    border-bottom: 1px solid #30363d;
+}
+
+.modal-title {
+    color: #c9d1d9;
+}
+
+.btn-close {
+    filter: invert(1);
+}
+
+.form-label {
+    color: #c9d1d9;
+}
+
+.form-select, .form-control {
+    background: #21262d;
+    border: 1px solid #30363d;
+    color: #c9d1d9;
+}
+
+.form-select:focus, .form-control:focus {
+    background: #21262d;
+    border-color: #58a6ff;
+    color: #c9d1d9;
+    box-shadow: 0 0 0 0.2rem rgba(88, 166, 255, 0.25);
+}
+
+.text-primary { color: #58a6ff !important; }
+.text-success { color: #3fb950 !important; }
+.text-danger { color: #f85149 !important; }
+.text-warning { color: #d29922 !important; }
+.text-info { color: #58a6ff !important; }
+.text-muted { color: #8b949e !important; }
+
+.bg-primary { background-color: #58a6ff !important; }
+.bg-success { background-color: #3fb950 !important; }
+.bg-danger { background-color: #f85149 !important; }
+.bg-warning { background-color: #d29922 !important; }
+.bg-info { background-color: #58a6ff !important; }
+</style>

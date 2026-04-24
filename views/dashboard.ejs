@@ -1,0 +1,203 @@
+<div class="dashboard fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="slide-up"><i class="fas fa-tachometer-alt me-2"></i> لوحة التحكم</h2>
+        <% if (user) { %>
+            <a href="/hosting/new" class="btn btn-primary slide-up" style="animation-delay: 0.1s;">
+                <i class="fas fa-plus me-1"></i> إنشاء استضافة جديدة
+            </a>
+            <% } %>
+    </div>
+
+    <div class="grid grid-4 mb-4 slide-up" style="animation-delay: 0.2s;">
+        <div class="card">
+            <div class="card-icon">
+                <i class="fas fa-server"></i>
+            </div>
+            <h4 class="mb-1">
+                <%= stats.totalHostings %>
+            </h4>
+            <p>إجمالي الاستضافات</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">
+                <i class="fas fa-play-circle"></i>
+            </div>
+            <h4 class="mb-1">
+                <%= stats.activeHostings %>
+            </h4>
+            <p>الاستضافات النشطة</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">
+                <i class="fas fa-cube"></i>
+            </div>
+            <h4 class="mb-1">
+                <%= stats.minecraftHostings || 0 %>
+            </h4>
+            <p>سيرفرات Minecraft</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <h4 class="mb-1">
+                <%= stats.users %>
+            </h4>
+            <p>المستخدمين</p>
+        </div>
+    </div>
+
+    <div class="grid grid-3-1 slide-up" style="animation-delay: 0.3s;">
+        <div>
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-server me-1"></i> استضافاتي</h4>
+                </div>
+                <div class="card-body">
+                    <% if (user && userHostings.length> 0) { %>
+                        <div class="hosting-list">
+                            <% userHostings.forEach(hosting=> { %>
+                                <div class="hosting-item">
+                                    <div class="hosting-item-header">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div
+                                                class="status-indicator <%= hosting.status === 'running' ? 'running' : '' %>">
+                                            </div>
+                                            <h5 class="mb-0">
+                                                <%= hosting.name %>
+                                            </h5>
+                                        </div>
+                                        <span
+                                            class="badge <%= hosting.status === 'running' ? 'bg-success' : 'bg-danger' %>">
+                                            <%= hosting.status==='running' ? 'نشط' : 'متوقف' %>
+                                        </span>
+                                    </div>
+                                    <div class="hosting-item-body">
+                                        <div class="hosting-info">
+                                            <div class="hosting-info-item">
+                                                <i class="far fa-calendar me-1 text-muted"></i>
+                                                <span class="text-muted">ينتهي: <%= hosting.expiryDate %></span>
+                                            </div>
+                                            <div class="hosting-info-item">
+                                                <span class="badge bg-dark text-uppercase"><i
+                                                        class="fas fa-tags me-1"></i>
+                                                    <%= (hosting.serviceType||'discord') %>
+                                                </span>
+                                                <span class="ip-address"><i class="fas fa-network-wired me-1"></i>
+                                                    <%= hosting.proxyAddress || (process.env.SERVER_ADDRESS
+                                                        || 'localhost:3000' ) %>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="hosting-item-footer">
+                                        <a href="/hosting/<%= hosting.id %>" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-cog me-1"></i> إدارة
+                                        </a>
+                                        <a href="/console/<%= hosting.id %>" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-terminal me-1"></i> كونسول
+                                        </a>
+                                        <a href="/files/<%= hosting.id %>" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-folder me-1"></i> ملفات
+                                        </a>
+                                    </div>
+                                </div>
+                                <% }); %>
+                        </div>
+                        <% } else { %>
+                            <div class="text-center py-5">
+                                <i class="fas fa-server fa-3x mb-3 text-muted"></i>
+                                <h5>لا توجد استضافات</h5>
+                                <p class="text-muted">قم بإنشاء استضافة جديدة للبدء</p>
+                                <% if (user) { %>
+                                    <a href="/hosting/new" class="btn btn-primary mt-2">
+                                        <i class="fas fa-plus me-1"></i> إنشاء استضافة
+                                    </a>
+                                    <% } else { %>
+                                        <a href="/login" class="btn btn-primary mt-2">
+                                            <i class="fab fa-discord me-1"></i> تسجيل الدخول للبدء
+                                        </a>
+                                        <% } %>
+                            </div>
+                            <% } %>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-bullhorn me-1"></i> آخر الإعلانات</h4>
+                </div>
+                <div class="card-body">
+                    <% if (announcements && announcements.length> 0) { %>
+                        <% announcements.forEach(announcement=> { %>
+                            <div class="announcement mb-3 pb-3 border-bottom">
+                                <h5 class="mb-1">
+                                    <%= announcement.title %>
+                                </h5>
+                                <p class="text-muted small mb-2"><i class="fas fa-clock me-1"></i>
+                                    <%= announcement.date %>
+                                </p>
+                                <p class="mb-0">
+                                    <%= announcement.content %>
+                                </p>
+                            </div>
+                            <% }); %>
+                                <% } else { %>
+                                    <div class="text-center py-4">
+                                        <i class="fas fa-bullhorn fa-2x mb-3 text-muted"></i>
+                                        <p class="mb-0">لا توجد إعلانات حالياً</p>
+                                    </div>
+                                    <% } %>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-gift me-1"></i> الجوائز النشطة</h4>
+                </div>
+                <div class="card-body">
+                    <% if (giveaways && giveaways.length> 0) { %>
+                        <% giveaways.forEach(giveaway=> { %>
+                            <div class="giveaway mb-3">
+                                <h5 class="mb-1">
+                                    <%= giveaway.title %>
+                                </h5>
+                                <p class="text-muted small mb-2"><i class="fas fa-clock me-1"></i> ينتهي في: <%=
+                                        giveaway.endDate %>
+                                </p>
+                                <div class="progress mb-2">
+                                    <div class="progress-bar giveaway-bar" role="progressbar"
+                                        data-percentage="<%= giveaway.progressPercent %>"
+                                        aria-valuenow="<%= giveaway.progressPercent %>" aria-valuemin="0"
+                                        aria-valuemax="100"></div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted"><i class="fas fa-users me-1"></i>
+                                        <%= giveaway.participants %> مشارك
+                                    </small>
+                                    <a href="/giveaway/<%= giveaway.id %>" class="btn btn-sm btn-primary">المشاركة</a>
+                                </div>
+                            </div>
+                            <% }); %>
+                                <% } else { %>
+                                    <div class="text-center py-4">
+                                        <i class="fas fa-gift fa-2x mb-3 text-muted"></i>
+                                        <p class="mb-0">لا توجد جوائز نشطة حالياً</p>
+                                    </div>
+                                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.giveaway-bar').forEach(bar => {
+            const percentage = bar.getAttribute('data-percentage') || 0;
+            bar.style.width = percentage + '%';
+        });
+    });
+</script>

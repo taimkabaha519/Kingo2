@@ -1,0 +1,20 @@
+[
+  {
+    "id": "mfdc45tn",
+    "userId": "system",
+    "username": "النظام",
+    "avatar": "/img/system-avatar.png",
+    "message": "تم إنشاء التذكرة بنجاح. سيقوم فريق الدعم بالرد عليك قريباً.",
+    "timestamp": "2025-09-10T02:02:35.003Z",
+    "isSystem": true
+  },
+  {
+    "id": "mfewl5jy",
+    "userId": "system",
+    "username": "النظام",
+    "avatar": "/img/system-avatar.png",
+    "message": "تم تغيير حالة التذكرة إلى \"closed\" بواسطة sara24151: test",
+    "timestamp": "2025-09-11T04:23:26.302Z",
+    "isSystem": true
+  }
+]

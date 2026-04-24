@@ -1,0 +1,42 @@
+{
+  "name": "sivano-hosting",
+  "version": "1.0.0",
+  "description": "Discord bot hosting service with web interface",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "author": "Sivano",
+  "license": "MIT",
+  "dependencies": {
+    "@discordjs/voice": "^0.19.0",
+    "archiver": "^6.0.1",
+    "axios": "^1.13.2",
+    "cheerio": "^1.1.2",
+    "child_process": "^1.0.2",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "discord.js": "^14.13.0",
+    "dotenv": "^16.3.1",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "firebase-admin": "^13.0.0",
+    "fs-extra": "^11.1.1",
+    "geoip-lite": "^1.4.10",
+    "get-port": "^7.0.0",
+    "gridfs-stream": "^1.1.1",
+    "http-proxy-middleware": "^2.0.6",
+    "mongodb": "^6.18.0",
+    "mongoose": "^8.17.1",
+    "multer": "^1.4.5-lts.1",
+    "nodemon": "^3.0.1",
+    "passport": "^0.7.0",
+    "passport-discord": "^0.1.4",
+    "path": "^0.12.7",
+    "socket.io": "^4.7.2",
+    "unzipper": "^0.10.14"
+  }
+}

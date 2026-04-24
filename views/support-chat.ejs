@@ -1,0 +1,478 @@
+<div class="support-chat-page fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="slide-up">
+            <i class="fas fa-comments me-2"></i> 
+            محادثة الدعم: <%= ticket.subject %>
+            <span class="badge <%= ticket.status==='open'?'bg-success':ticket.status==='pending'?'bg-dark':'bg-danger' %> ms-2"><%= ticket.status %></span>
+        </h2>
+        <div class="slide-up" style="animation-delay: 0.1s;">
+            <a href="/support" class="btn btn-outline">
+                <i class="fas fa-arrow-left me-1"></i> العودة للدعم
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-3-1 slide-up" style="animation-delay: 0.2s;">
+        <div>
+            <div class="card chat-card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-comment-dots me-1"></i> المحادثة</h4>
+                        <% if (isAdmin) { %>
+                            <div class="dropdown">
+                                <button class="btn btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-cog me-1"></i> إجراءات
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" onclick="changeTicketStatus('open'); return false;"><i class="fas fa-door-open me-1"></i> فتح التذكرة</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="changeTicketStatus('pending'); return false;"><i class="fas fa-clock me-1"></i> قيد المراجعة</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="changeTicketStatus('closed'); return false;"><i class="fas fa-check-circle me-1"></i> إغلاق التذكرة</a></li>
+                                </ul>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Messages will be loaded here -->
+                    <div class="chat-loading">
+                        <div class="spinner"></div>
+                        <p>جاري تحميل المحادثة...</p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <form id="chat-form" class="chat-form">
+                        <div class="input-group input-group-enhanced">
+                            <input type="text" id="message-input" class="form-control" placeholder="اكتب رسالتك هنا..." <%= ticket.status === 'closed' ? 'disabled' : '' %>>
+                            <button type="submit" class="btn btn-primary" <%= ticket.status === 'closed' ? 'disabled' : '' %>>
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <% if (ticket.status === 'closed') { %>
+                            <div class="text-center mt-2 text-muted">
+                                <i class="fas fa-lock me-1"></i> هذه التذكرة مغلقة ولا يمكن إضافة رسائل جديدة
+                            </div>
+                        <% } %>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-info-circle me-1"></i> تفاصيل التذكرة</h4>
+                </div>
+                <div class="card-body">
+                    <div class="ticket-details">
+                        <div class="detail-item">
+                            <span class="detail-label">رقم التذكرة:</span>
+                            <span class="detail-value"><%= ticket.id %></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">الموضوع:</span>
+                            <span class="detail-value"><%= ticket.subject %></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">النوع:</span>
+                            <span class="detail-value"><%= ticket.type %></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">الحالة:</span>
+                            <span class="detail-value">
+                                <span class="badge <%= ticket.status==='open'?'bg-success':ticket.status==='pending'?'bg-dark':'bg-danger' %>">
+                                    <%= ticket.status %>
+                                </span>
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">تاريخ الإنشاء:</span>
+                            <span class="detail-value"><%= new Date(ticket.createdAt).toLocaleString('ar-EG') %></span>
+                        </div>
+                        <% if (ticket.urgent) { %>
+                            <div class="detail-item">
+                                <span class="detail-label">الأهمية:</span>
+                                <span class="detail-value">
+                                    <span class="badge bg-danger">عاجل</span>
+                                </span>
+                            </div>
+                        <% } %>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <h5>تفاصيل المشكلة:</h5>
+                        <div class="ticket-description">
+                            <%= ticket.details %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-history me-1"></i> سجل التحديثات</h4>
+                </div>
+                <div class="card-body">
+                    <% if (ticket.updates && ticket.updates.length > 0) { %>
+                        <div class="ticket-updates">
+                            <% ticket.updates.forEach(update => { %>
+                                <div class="update-item">
+                                    <div class="update-time"><%= new Date(update.at).toLocaleString('ar-EG') %></div>
+                                    <div class="update-content">
+                                        <span class="update-by"><%= update.by %></span>
+                                        <span class="update-action">
+                                            <% if (update.status === 'open') { %>
+                                                فتح التذكرة
+                                            <% } else if (update.status === 'pending') { %>
+                                                وضع التذكرة قيد المراجعة
+                                            <% } else if (update.status === 'closed') { %>
+                                                أغلق التذكرة
+                                            <% } %>
+                                        </span>
+                                        <% if (update.note) { %>
+                                            <div class="update-note"><%= update.note %></div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <div class="text-muted text-center py-3">لا توجد تحديثات</div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.chat-card {
+    display: flex;
+    flex-direction: column;
+    height: 600px;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    background-color: var(--bg-med);
+}
+
+.chat-form {
+    margin-bottom: 0;
+}
+
+.chat-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-secondary);
+}
+
+.chat-loading .spinner {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 10px;
+}
+
+.message {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    max-width: 80%;
+}
+
+.message.outgoing {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.message.incoming {
+    align-self: flex-start;
+    align-items: flex-start;
+}
+
+.message.system {
+    align-self: center;
+    align-items: center;
+    max-width: 90%;
+}
+
+.message-content {
+    padding: 10px 15px;
+    border-radius: 18px;
+    position: relative;
+    word-break: break-word;
+}
+
+.message.outgoing .message-content {
+    background-color: var(--accent-blue);
+    color: white;
+    border-bottom-right-radius: 5px;
+}
+
+.message.incoming .message-content {
+    background-color: var(--bg-light);
+    color: var(--text-primary);
+    border-bottom-left-radius: 5px;
+}
+
+.message.system .message-content {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    font-style: italic;
+    border-radius: 10px;
+    font-size: 0.9em;
+}
+
+.message-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.message-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    margin-right: 8px;
+    object-fit: cover;
+}
+
+.message.outgoing .message-avatar {
+    margin-right: 0;
+    margin-left: 8px;
+    order: 2;
+}
+
+.message-username {
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.message-time {
+    font-size: 0.75em;
+    color: var(--text-secondary);
+    margin-top: 5px;
+}
+
+.admin-badge {
+    background-color: var(--accent-blue);
+    color: white;
+    font-size: 0.7em;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 5px;
+}
+
+.ticket-details {
+    margin-bottom: 15px;
+}
+
+.detail-item {
+    display: flex;
+    margin-bottom: 8px;
+}
+
+.detail-label {
+    font-weight: bold;
+    width: 120px;
+    color: var(--text-secondary);
+}
+
+.ticket-description {
+    background-color: var(--bg-dark);
+    padding: 10px;
+    border-radius: var(--radius);
+    white-space: pre-wrap;
+}
+
+.ticket-updates {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.update-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.update-item:last-child {
+    border-bottom: none;
+}
+
+.update-time {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+}
+
+.update-by {
+    font-weight: bold;
+}
+
+.update-note {
+    margin-top: 5px;
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+    .grid-3-1 {
+        grid-template-columns: 1fr;
+    }
+    
+    .chat-card {
+        height: 400px;
+        margin-bottom: 20px;
+    }
+}
+</style>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const socket = io();
+    const ticketId = '<%= ticket.id %>';
+    const userId = '<%= user.id %>';
+    const username = '<%= user.username %>';
+    const avatar = '<%= user.avatar %>';
+    const isAdmin = <%= isAdmin %>;
+    const chatMessages = document.getElementById('chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message-input');
+    
+    // Join the support chat room
+    socket.emit('join-support-chat', ticketId, userId);
+    
+    // Handle incoming messages
+    socket.on('support-chat-message', function(message) {
+        addMessageToChat(message);
+    });
+    
+    // Load chat history
+    socket.on('support-chat-history', function(messages) {
+        // Clear loading indicator
+        chatMessages.innerHTML = '';
+        
+        // Add all messages
+        messages.forEach(message => {
+            addMessageToChat(message);
+        });
+        
+        // Scroll to bottom
+        scrollToBottom();
+    });
+    
+    // Handle form submission
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const message = messageInput.value.trim();
+        if (!message) return;
+        
+        // Clear input
+        messageInput.value = '';
+        
+        // Send message to server
+        socket.emit('support-chat-message', {
+            ticketId,
+            userId,
+            username,
+            avatar,
+            message,
+            isAdmin
+        });
+    });
+    
+    // Function to add message to chat
+    function addMessageToChat(message) {
+        const messageElement = document.createElement('div');
+        
+        if (message.isSystem) {
+            // System message
+            messageElement.className = 'message system';
+            messageElement.innerHTML = `
+                <div class="message-content">
+                    ${message.message}
+                </div>
+                <div class="message-time">
+                    ${formatTime(message.timestamp)}
+                </div>
+            `;
+        } else {
+            // User or admin message
+            const isOutgoing = message.userId === userId;
+            messageElement.className = `message ${isOutgoing ? 'outgoing' : 'incoming'}`;
+            
+            messageElement.innerHTML = `
+                <div class="message-header">
+                    <img src="${message.avatar}" alt="${message.username}" class="message-avatar">
+                    <span class="message-username">
+                        ${message.username}
+                        ${message.isAdmin ? '<span class="admin-badge">مشرف</span>' : ''}
+                    </span>
+                </div>
+                <div class="message-content">
+                    ${message.message}
+                </div>
+                <div class="message-time">
+                    ${formatTime(message.timestamp)}
+                </div>
+            `;
+        }
+        
+        chatMessages.appendChild(messageElement);
+        scrollToBottom();
+    }
+    
+    // Function to format time
+    function formatTime(timestamp) {
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+    }
+    
+    // Function to scroll to bottom of chat
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // Admin: Change ticket status
+    window.changeTicketStatus = function(status) {
+        if (!isAdmin) return;
+        
+        const note = prompt('أدخل ملاحظة (اختياري):');
+        
+        fetch(`/admin/tickets/${ticketId}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status, note })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(`تم تغيير حالة التذكرة إلى ${status}`, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast('حدث خطأ أثناء تغيير حالة التذكرة', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('حدث خطأ في الاتصال', 'error');
+        });
+    };
+    
+    // Listen for notifications about this ticket
+    socket.on('ticket-status-changed', function(data) {
+        if (data.ticketId === ticketId) {
+            showToast(`تم تغيير حالة التذكرة إلى ${data.status} بواسطة ${data.updatedBy}`, 'info');
+            setTimeout(() => location.reload(), 2000);
+        }
+    });
+});
+</script>
+
+

@@ -1,0 +1,556 @@
+<div class="credit-page fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="slide-up"><i class="fas fa-coins me-2"></i> رصيدي</h2>
+            <p class="text-muted mb-0 slide-up" style="animation-delay: 0.1s;">إدارة الرصيد وشحن الحساب</p>
+        </div>
+        <div class="slide-up" style="animation-delay: 0.2s;">
+            <a href="/" class="btn btn-outline me-2">
+                <i class="fas fa-home me-1"></i> الرئيسية
+            </a>
+            <a href="/hostings" class="btn btn-outline">
+                <i class="fas fa-server me-1"></i> استضافاتي
+            </a>
+        </div>
+    </div>
+
+    <% if (!user) { %>
+        <div class="card p-4 text-center slide-up" style="animation-delay: 0.3s;">
+            <div class="card-icon">
+                <i class="fab fa-discord"></i>
+            </div>
+            <h3 class="mb-2">سجّل الدخول لعرض رصيدك</h3>
+            <p class="text-muted mb-4">استخدم حساب ديسكورد الخاص بك للوصول إلى رصيدك</p>
+            <div class="d-flex justify-content-center">
+                <a href="/auth/discord" class="btn btn-primary">
+                    <i class="fab fa-discord me-2"></i> تسجيل الدخول
+                </a>
+            </div>
+        </div>
+    <% } else { %>
+        <div class="grid grid-3-1 slide-up" style="animation-delay: 0.3s;">
+            <div>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4 class="mb-0"><i class="fas fa-wallet me-1"></i> رصيدي الحالي</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-center mb-4">
+                            <div class="credit-balance">
+                                <span class="amount"><%= user.credits || 0 %></span>
+                                <span class="currency">$</span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-center">
+                            <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#buyCreditsModal">
+                                <i class="fas fa-plus-circle me-1"></i> شراء رصيد
+                            </button>
+                            <button class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#transferCreditsModal">
+                                <i class="fas fa-exchange-alt me-1"></i> تحويل رصيد
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4 class="mb-0"><i class="fas fa-gift me-1"></i> استخدام كود خصم</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="redeem-code-form">
+                            <div class="input-group-enhanced mb-3">
+                                <input type="text" class="form-control" id="discount-code" placeholder="أدخل كود الخصم" required>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-check me-1"></i> تفعيل
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-history me-1"></i> سجل المعاملات</h4>
+                        <button class="btn btn-sm btn-outline" id="refresh-transactions">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="transactions-list" id="transactions-list">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">جاري التحميل...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4 class="mb-0"><i class="fas fa-info-circle me-1"></i> معلومات الرصيد</h4>
+                    </div>
+                    <div class="card-body">
+                        <p>الرصيد هو العملة المستخدمة لشراء الاستضافات في نظامنا. يمكنك استخدام الرصيد لشراء:</p>
+                        <ul>
+                            <li>استضافة بوتات ديسكورد</li>
+                            <li>استضافة مواقع الويب</li>
+                        </ul>
+                        <p>يمكنك زيادة رصيدك من خلال:</p>
+                        <ul>
+                            <li>شراء رصيد باستخدام بطاقة الائتمان</li>
+                            <li>استخدام أكواد الخصم</li>
+                            <li>استلام تحويلات من مستخدمين آخرين</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0"><i class="fas fa-tags me-1"></i> باقات الاستضافة</h4>
+                    </div>
+                    <div class="card-body">
+                        <h5>استضافة بوتات ديسكورد</h5>
+                        <ul>
+                            <li>الباقة الأساسية: 2$ شهرياً</li>
+                            <li>الباقة القياسية: 5$ شهرياً</li>
+                            <li>الباقة المتميزة: 10$ شهرياً</li>
+                        </ul>
+                        <h5>استضافة مواقع الويب</h5>
+                        <ul>
+                            <li>الباقة الأساسية: 3$ شهرياً</li>
+                            <li>الباقة القياسية: 7$ شهرياً</li>
+                            <li>الباقة المتميزة: 15$ شهرياً</li>
+                        </ul>
+                        <a href="/buy-hosting" class="btn btn-primary mt-2">
+                            <i class="fas fa-shopping-cart me-1"></i> شراء استضافة
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<!-- Modal: شراء رصيد -->
+<div class="modal fade" id="buyCreditsModal" tabindex="-1" aria-labelledby="buyCreditsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="buyCreditsModalLabel">شراء رصيد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body">
+                <form id="buy-credits-form">
+                    <div class="form-group mb-3">
+                        <label for="credit-amount">المبلغ ($)</label>
+                        <input type="number" class="form-control" id="credit-amount" min="1" max="1000" value="10" required>
+                        <div class="form-text">الحد الأدنى: 1$، الحد الأقصى: 1000$</div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="card-number">رقم البطاقة</label>
+                        <input type="text" class="form-control" id="card-number" placeholder="XXXX XXXX XXXX XXXX" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="card-expiry">تاريخ الانتهاء</label>
+                                <input type="text" class="form-control" id="card-expiry" placeholder="MM/YY" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="card-cvv">رمز الأمان (CVV)</label>
+                                <input type="text" class="form-control" id="card-cvv" placeholder="XXX" required>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="buy-credits-btn">
+                    <i class="fas fa-shopping-cart me-1"></i> شراء
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: تحويل رصيد -->
+<div class="modal fade" id="transferCreditsModal" tabindex="-1" aria-labelledby="transferCreditsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transferCreditsModalLabel">تحويل رصيد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body">
+                <form id="transfer-credits-form">
+                    <div class="form-group mb-3">
+                        <label for="transfer-username">اسم المستخدم المستلم</label>
+                        <input type="text" class="form-control" id="transfer-username" placeholder="أدخل اسم المستخدم" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="transfer-amount">المبلغ ($)</label>
+                        <input type="number" class="form-control" id="transfer-amount" min="1" max="<%= user ? user.credits : 0 %>" value="1" required>
+                        <div class="form-text">رصيدك الحالي: $<%= user ? user.credits : 0 %></div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="transfer-reason">سبب التحويل (اختياري)</label>
+                        <input type="text" class="form-control" id="transfer-reason" placeholder="سبب التحويل">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="transfer-credits-btn">
+                    <i class="fas fa-paper-plane me-1"></i> تحويل
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // تحميل سجل المعاملات
+        loadTransactions();
+        
+        // تحديث سجل المعاملات
+        document.getElementById('refresh-transactions').addEventListener('click', function() {
+            loadTransactions();
+        });
+        
+        // نموذج استخدام كود الخصم
+        document.getElementById('redeem-code-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            redeemCode();
+        });
+        
+        // زر شراء الرصيد
+        document.getElementById('buy-credits-btn').addEventListener('click', function() {
+            buyCredits();
+        });
+        
+        // زر تحويل الرصيد
+        document.getElementById('transfer-credits-btn').addEventListener('click', function() {
+            transferCredits();
+        });
+    });
+    
+    // تحميل سجل المعاملات
+    function loadTransactions() {
+        const transactionsList = document.getElementById('transactions-list');
+        transactionsList.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">جاري التحميل...</span>
+                </div>
+            </div>
+        `;
+        
+        fetch('/api/payment/transactions')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.transactions.length === 0) {
+                        transactionsList.innerHTML = `
+                            <div class="text-center py-4">
+                                <p class="text-muted">لا توجد معاملات حتى الآن</p>
+                            </div>
+                        `;
+                    } else {
+                        transactionsList.innerHTML = '';
+                        data.transactions.forEach(transaction => {
+                            const date = new Date(transaction.timestamp).toLocaleDateString();
+                            const time = new Date(transaction.timestamp).toLocaleTimeString();
+                            const isCredit = transaction.type === 'credit';
+                            
+                            transactionsList.innerHTML += `
+                                <div class="transaction-item">
+                                    <div class="transaction-icon ${isCredit ? 'credit' : 'debit'}">
+                                        <i class="fas ${isCredit ? 'fa-plus' : 'fa-minus'}"></i>
+                                    </div>
+                                    <div class="transaction-details">
+                                        <div class="transaction-title">${transaction.reason || (isCredit ? 'إضافة رصيد' : 'خصم رصيد')}</div>
+                                        <div class="transaction-date">${date} ${time}</div>
+                                    </div>
+                                    <div class="transaction-amount ${isCredit ? 'credit' : 'debit'}">
+                                        ${isCredit ? '+' : '-'}${transaction.amount}$
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                } else {
+                    transactionsList.innerHTML = `
+                        <div class="text-center py-4">
+                            <p class="text-danger">فشل في تحميل المعاملات</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                transactionsList.innerHTML = `
+                    <div class="text-center py-4">
+                        <p class="text-danger">خطأ في الاتصال</p>
+                    </div>
+                `;
+            });
+    }
+    
+    // استخدام كود الخصم
+    function redeemCode() {
+        const code = document.getElementById('discount-code').value;
+        if (!code) {
+            showToast('يرجى إدخال كود الخصم', 'error');
+            return;
+        }
+        
+        showSpinner();
+        fetch('/api/payment/redeem-code', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ code })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideSpinner();
+            if (data.success) {
+                showToast(data.message, 'success');
+                document.getElementById('discount-code').value = '';
+                updateCreditBalance(data.newCredit);
+                loadTransactions();
+            } else {
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            hideSpinner();
+            showToast('حدث خطأ في الاتصال', 'error');
+        });
+    }
+    
+    // شراء رصيد
+    function buyCredits() {
+        const amount = document.getElementById('credit-amount').value;
+        const cardNumber = document.getElementById('card-number').value;
+        const cardExpiry = document.getElementById('card-expiry').value;
+        const cardCvv = document.getElementById('card-cvv').value;
+        
+        if (!amount || !cardNumber || !cardExpiry || !cardCvv) {
+            showToast('يرجى ملء جميع الحقول', 'error');
+            return;
+        }
+        
+        if (cardNumber.replace(/\s/g, '').length !== 16) {
+            showToast('رقم البطاقة غير صحيح', 'error');
+            return;
+        }
+        
+        if (!/^\d{2}\/\d{2}$/.test(cardExpiry)) {
+            showToast('تاريخ انتهاء البطاقة غير صحيح (MM/YY)', 'error');
+            return;
+        }
+        
+        if (!/^\d{3,4}$/.test(cardCvv)) {
+            showToast('رمز الأمان غير صحيح', 'error');
+            return;
+        }
+        
+        showSpinner();
+        fetch('/api/payment/buy-credit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ amount })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideSpinner();
+            if (data.success) {
+                showToast(data.message, 'success');
+                $('#buyCreditsModal').modal('hide');
+                updateCreditBalance(data.newCredit);
+                loadTransactions();
+                
+                // إعادة تعيين النموذج
+                document.getElementById('card-number').value = '';
+                document.getElementById('card-expiry').value = '';
+                document.getElementById('card-cvv').value = '';
+            } else {
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            hideSpinner();
+            showToast('حدث خطأ في الاتصال', 'error');
+        });
+    }
+    
+    // تحويل رصيد
+    function transferCredits() {
+        const username = document.getElementById('transfer-username').value;
+        const amount = document.getElementById('transfer-amount').value;
+        const reason = document.getElementById('transfer-reason').value;
+        
+        if (!username || !amount) {
+            showToast('يرجى ملء الحقول المطلوبة', 'error');
+            return;
+        }
+        
+        showSpinner();
+        fetch('/api/payment/transfer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, amount, reason })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideSpinner();
+            if (data.success) {
+                showToast(data.message, 'success');
+                $('#transferCreditsModal').modal('hide');
+                updateCreditBalance(data.newCredit);
+                loadTransactions();
+                
+                // إعادة تعيين النموذج
+                document.getElementById('transfer-username').value = '';
+                document.getElementById('transfer-amount').value = '1';
+                document.getElementById('transfer-reason').value = '';
+            } else {
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            hideSpinner();
+            showToast('حدث خطأ في الاتصال', 'error');
+        });
+    }
+    
+    // تحديث رصيد المستخدم
+    function updateCreditBalance(newCredit) {
+        const creditBalanceElement = document.querySelector('.credit-balance .amount');
+        if (creditBalanceElement) {
+            creditBalanceElement.textContent = newCredit;
+        }
+        
+        // تحديث الحد الأقصى لمبلغ التحويل
+        const transferAmountInput = document.getElementById('transfer-amount');
+        if (transferAmountInput) {
+            transferAmountInput.max = newCredit;
+            transferAmountInput.nextElementSibling.textContent = `رصيدك الحالي: $${newCredit}`;
+        }
+    }
+</script>
+
+<style>
+    .credit-balance {
+        text-align: center;
+        padding: 20px;
+        background-color: var(--bg-dark);
+        border-radius: var(--radius);
+        display: inline-flex;
+        align-items: baseline;
+    }
+    
+    .credit-balance .amount {
+        font-size: 3rem;
+        font-weight: bold;
+        color: var(--accent-blue);
+    }
+    
+    .credit-balance .currency {
+        font-size: 1.5rem;
+        margin-left: 5px;
+        color: var(--text-muted);
+    }
+    
+    .transactions-list {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .transaction-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .transaction-item:last-child {
+        border-bottom: none;
+    }
+    
+    .transaction-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+    }
+    
+    .transaction-icon.credit {
+        background-color: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+    }
+    
+    .transaction-icon.debit {
+        background-color: rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+    }
+    
+    .transaction-details {
+        flex: 1;
+    }
+    
+    .transaction-title {
+        font-weight: bold;
+    }
+    
+    .transaction-date {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+    
+    .transaction-amount {
+        font-weight: bold;
+    }
+    
+    .transaction-amount.credit {
+        color: #2ecc71;
+    }
+    
+    .transaction-amount.debit {
+        color: #e74c3c;
+    }
+    
+    /* Modal Styles */
+    .modal-content {
+        background-color: var(--bg-med);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+    
+    .modal-header {
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .modal-footer {
+        border-top: 1px solid var(--border-color);
+    }
+    
+    .btn-close {
+        filter: invert(1);
+    }
+</style>

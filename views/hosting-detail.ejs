@@ -1,0 +1,951 @@
+<div class="hosting-detail fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <% if (hosting.logo) { %>
+                <img src="<%= hosting.logo %>" alt="<%= hosting.name %>" class="hosting-logo"
+                    style="width: 64px; height: 64px; border-radius: 8px; object-fit: cover; border: 2px solid var(--border-color);">
+                <% } %>
+                    <h2 class="slide-up mb-0"><i class="fas fa-server me-2"></i>
+                        <%= hosting.name %>
+                    </h2>
+        </div>
+        <div class="slide-up" style="animation-delay: 0.1s;">
+            <a href="/hostings" class="btn btn-outline me-2">
+                <i class="fas fa-arrow-left me-1"></i> العودة
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-3-1 slide-up" style="animation-delay: 0.2s;">
+        <div>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <ul class="tab-nav" id="hostingTabs" role="tablist">
+                        <li class="tab-item active" id="overview-tab" data-tab="overview">نظرة عامة</li>
+                        <li class="tab-item" id="startup-tab" data-tab="startup">إعدادات التشغيل (Startup)</li>
+                        <li class="tab-item" id="backups-tab" data-tab="backups">النسخ الاحتياطي (Backups)</li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content">
+                        <!-- Overview Tab -->
+                        <div class="tab-pane active" id="overview">
+                            <div class="grid grid-2 mb-4">
+                                <div class="card bg-dark">
+                                    <div class="card-icon">
+                                        <i id="statusIcon"
+                                            class="fas fa-circle <%= hosting.status === 'running' ? 'text-success' : 'text-danger' %>"></i>
+                                    </div>
+                                    <h4 id="statusText" class="mb-1">
+                                        <%= hosting.status==='running' ? 'نشط' : 'متوقف' %>
+                                    </h4>
+                                    <p>الحالة</p>
+                                </div>
+                                <div class="card bg-dark">
+                                    <div class="card-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <h4 class="mb-1">
+                                        <%= hosting.uptime || '0 دقيقة' %>
+                                    </h4>
+                                    <p>وقت التشغيل</p>
+                                </div>
+                                <div class="card bg-dark">
+                                    <div class="card-icon">
+                                        <i class="fas fa-hdd"></i>
+                                    </div>
+                                    <h4 class="mb-1">
+                                        <%= hosting.usedStorage %>
+                                    </h4>
+                                    <p>المساحة المستخدمة</p>
+                                </div>
+                                <div class="card bg-dark">
+                                    <div class="card-icon">
+                                        <i class="fas fa-calendar"></i>
+                                    </div>
+                                    <h4 class="mb-1">
+                                        <%= hosting.expiryDate %>
+                                    </h4>
+                                    <p>تاريخ الانتهاء</p>
+                                </div>
+                            </div>
+
+                            <% if (publicUrl) { %>
+                                <div class="mb-4">
+                                    <h4>رابط الموقع العام</h4>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" value="<%= publicUrl %>" readonly>
+                                        <button class="btn btn-outline" type="button"
+                                            onclick="copyToClipboard('<%= publicUrl %>')">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                        <button class="btn btn-outline" type="button"
+                                            onclick="window.open('<%= publicUrl %>', '_blank')">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </button>
+                                    </div>
+                                    <p class="text-muted small mt-2">يتم عرض مواقع الويب فقط تحت
+                                        /sites/اسم_المستخدم/اسم_الموقع. ربط الدومين متاح من خلال الإعدادات قريباً.</p>
+                                </div>
+                                <% } %>
+
+                                    <div class="mb-4">
+                                        <h4>تفاصيل الخدمة</h4>
+                                        <div class="grid grid-2">
+                                            <div class="card bg-dark">
+                                                <div class="card-icon">
+                                                    <i class="fas fa-tags"></i>
+                                                </div>
+                                                <h4 class="mb-1 text-capitalize">
+                                                    <%= hosting.serviceType || 'discord' %>
+                                                </h4>
+                                                <p>نوع الخدمة</p>
+                                            </div>
+                                            <div class="card bg-dark">
+                                                <div class="card-icon">
+                                                    <i class="fas fa-network-wired"></i>
+                                                </div>
+                                                <h4 class="mb-1">
+                                                    <%= hosting.port || '-' %>
+                                                </h4>
+                                                <p>المنفذ</p>
+                                            </div>
+                                        </div>
+
+                                        <% if (hosting.serviceType==='web' ) { %>
+                                            <div class="card bg-dark mt-3">
+                                                <div class="card-body">
+                                                    <h5 class="mb-2">رابط الموقع</h5>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control"
+                                                            value="/sites/<%= hosting.owner?.username %>/<%= hosting.name %>"
+                                                            readonly>
+                                                        <button class="btn btn-outline" type="button"
+                                                            onclick="copyToClipboard('/sites/<%= hosting.owner?.username %>/<%= hosting.name %>')">
+                                                            <i class="fas fa-copy"></i>
+                                                        </button>
+                                                        <button class="btn btn-outline" type="button"
+                                                            onclick="window.open('/sites/<%= hosting.owner?.username %>/<%= hosting.name %>', '_blank')">
+                                                            <i class="fas fa-external-link-alt"></i>
+                                                        </button>
+                                                    </div>
+                                                    <p class="text-muted small mt-2">اختر نوع الموقع:
+                                                        <span class="badge">HTML ثابت</span> ضع ملفاتك في
+                                                        <code>public/</code> وسيعمل الرابط مباشرة حتى بدون تشغيل خادم.
+                                                        <span class="badge">Node.js</span> شغّل تطبيقك على منفذ
+                                                        <code><%= hosting.port || 4000 %></code> وسيتم التوجيه إليه.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <% } else if (hosting.serviceType==='minecraft' ) { %>
+                                                <div class="card bg-dark mt-3">
+                                                    <div class="card-body">
+                                                        <h5 class="mb-2">اتصال Minecraft</h5>
+                                                        <div class="input-group">
+                                                            <input type="text" class="form-control"
+                                                                value="<%= hostAddress %>" readonly>
+                                                            <button class="btn btn-outline" type="button"
+                                                                onclick="copyToClipboard('<%= hostAddress %>')">
+                                                                <i class="fas fa-copy"></i>
+                                                            </button>
+                                                        </div>
+                                                        <p class="text-muted small mt-2">استخدم هذا العنوان للاتصال
+                                                            بالسيرفر من داخل اللعبة.</p>
+                                                    </div>
+                                                </div>
+                                                <% } else if (hosting.serviceType==='mta' ||
+                                                    hosting.serviceType==='fivem' ) { %>
+                                                    <div class="alert alert-info mt-3">
+                                                        خدمات الألعاب الأخرى (MTA/FiveM) قيد التطوير حالياً.
+                                                    </div>
+                                                    <% } %>
+                                    </div>
+
+
+                        </div>
+
+                        <!-- Startup Tab -->
+                        <div class="tab-pane" id="startup">
+                            <!-- Startup content -->
+                            <div class="card bg-dark mb-4">
+                                <div class="card-header">
+                                    <h4 class="mb-0">STARTUP COMMAND</h4>
+                                </div>
+                                <div class="card-body">
+                                    <textarea id="startup-command" class="form-control mb-2" rows="5"
+                                        placeholder="Command to run at startup"><%= hosting.startupCommand || (hosting.serviceType === 'minecraft' ? 'java -Xmx${RAM}M -Xms${RAM_HALF}M -jar ${MAIN_FILE} nogui' : 'node ${MAIN_FILE}') %></textarea>
+                                    <small class="text-muted">الأمر الذي سيتم تنفيذه عند بدء التشغيل. يدعم المتغيرات مثل
+                                        ${MAIN_FILE} و ${NODE_PACKAGES}.</small>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-2 mb-4">
+                                <div class="card bg-dark">
+                                    <div class="card-header">
+                                        <h4 class="mb-0">DOCKER IMAGE (Node.js)</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <select id="startup-node-version" class="form-control">
+                                            <option value="14" <%=hosting.nodeVersion==='14' ? 'selected' : '' %>>Nodejs
+                                                14</option>
+                                            <option value="16" <%=hosting.nodeVersion==='16' ? 'selected' : '' %>>Nodejs
+                                                16</option>
+                                            <option value="18" <%=hosting.nodeVersion==='18' ? 'selected' : '' %>>Nodejs
+                                                18</option>
+                                            <option value="20" <%=hosting.nodeVersion==='20' ? 'selected' : '' %>>Nodejs
+                                                20</option>
+                                        </select>
+                                        <small class="text-muted d-block mt-2">إصدار Node.js الذي سيعمل عليه
+                                            الهوست.</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card bg-dark mb-4">
+                                <div class="card-header">
+                                    <h4 class="mb-0">ADDITIONAL NODE PACKAGES</h4>
+                                </div>
+                                <div class="card-body">
+                                    <input type="text" id="startup-packages" class="form-control"
+                                        placeholder="اسم الحزمة واضغط Enter (مثال: axios express)"
+                                        value="<%= hosting.additionalPackages || '' %>">
+                                    <small class="text-muted d-block mt-2">تثبيت مكتبات إضافية تلقائياً.</small>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end">
+                                <button class="btn btn-primary" onclick="saveStartupSettings()">
+                                    <i class="fas fa-save me-1"></i> حفظ إعدادات التشغيل
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Backups Tab -->
+                        <div class="tab-pane" id="backups">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h4>إدارة النسخ الاحتياطي (Backup Files)</h4>
+                                <button class="btn btn-primary" onclick="createBackup()">
+                                    <i class="fas fa-plus me-1"></i> إنشاء نسخة احتياطية جديدة
+                                </button>
+                            </div>
+
+                            <div class="backups-list">
+                                <% if (hosting.backups && hosting.backups.length> 0) { %>
+                                    <div class="table-responsive">
+                                        <table class="table table-dark">
+                                            <thead>
+                                                <tr>
+                                                    <th>الاسم</th>
+                                                    <th>الحجم</th>
+                                                    <th>التاريخ</th>
+                                                    <th>الإجراءات</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% hosting.backups.forEach(backup=> { %>
+                                                    <tr>
+                                                        <td>
+                                                            <%= backup.name %>
+                                                        </td>
+                                                        <td>
+                                                            <%= backup.size %>
+                                                        </td>
+                                                        <td>
+                                                            <%= new Date(backup.createdAt).toLocaleString('ar-EG') %>
+                                                        </td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-outline me-1"
+                                                                onclick="downloadBackup('<%= backup._id %>')">
+                                                                <i class="fas fa-download"></i>
+                                                            </button>
+                                                            <button class="btn btn-sm btn-outline me-1"
+                                                                onclick="restoreBackup('<%= backup._id %>')">
+                                                                <i class="fas fa-undo"></i>
+                                                            </button>
+                                                            <button class="btn btn-sm btn-danger"
+                                                                onclick="deleteBackup('<%= backup._id %>')">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <% } else { %>
+                                        <div class="text-center p-5 bg-dark rounded border">
+                                            <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-muted"></i>
+                                            <p class="text-muted">لا يوجد أي نسخ احتياطية حالياً.</p>
+                                        </div>
+                                        <% } %>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-info-circle me-1"></i> معلومات الاستضافة</h4>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <div class="info-label">المالك</div>
+                        <div class="d-flex align-items-center">
+                            <img src="<%= hosting.owner.avatar %>" alt="<%= hosting.owner.username %>"
+                                class="avatar rounded-circle me-2">
+                            <span>
+                                <%= hosting.owner.username %>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">تاريخ الإنشاء</div>
+                        <div>
+                            <%= hosting.createdAt %>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">الملف الرئيسي</div>
+                        <div>
+                            <%= hosting.mainFile || 'index.js' %>
+                        </div>
+                    </div>
+                    <div class="info-item d-flex align-items-center justify-content-between">
+                        <div class="info-label">إصدار Node.js</div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span id="currentNodeVersion">v<%= hosting.nodeVersion || '16' %></span>
+                            <button type="button" class="btn btn-sm" id="changeNodeBtn"><i
+                                    class="fas fa-edit"></i></button>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">نوع الاشتراك</div>
+                        <div>
+                            <%= hosting.plan %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-chart-line me-1"></i> إحصائيات الاستخدام</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <div class="info-label">استخدام المعالج</div>
+                            <div>
+                                <%= hosting.cpuUsage || 0 %>%
+                            </div>
+                        </div>
+                        <div class="progress" style="background-color: var(--bg-light); height: 8px;">
+                            <div class="progress-bar usage-bar" role="progressbar"
+                                data-percentage="<%= hosting.cpuUsage || 0 %>"
+                                style="background-color: var(--accent-red);">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <div class="info-label">استخدام الذاكرة</div>
+                            <div>
+                                <%= hosting.memoryUsage || 0 %>%
+                            </div>
+                        </div>
+                        <div class="progress" style="background-color: var(--bg-light); height: 8px;">
+                            <div class="progress-bar usage-bar" role="progressbar"
+                                data-percentage="<%= hosting.memoryUsage || 0 %>"
+                                style="background-color: var(--accent-red);">
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <div class="info-label">استخدام المساحة</div>
+                            <div>
+                                <%= hosting.diskUsage || 0 %>%
+                            </div>
+                        </div>
+                        <div class="progress" style="background-color: var(--bg-light); height: 8px;">
+                            <div class="progress-bar usage-bar" role="progressbar"
+                                data-percentage="<%= hosting.diskUsage || 0 %>"
+                                style="background-color: var(--accent-red);">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // الاستماع لتغييرات حالة البوت لتحديث الواجهة فوراً
+        try {
+            const socket = io();
+            socket.emit('join-console', '<%= hosting.id %>');
+            socket.on('bot-status-changed', function (data) {
+                if (!data || data.hostId !== '<%= hosting.id %>') return;
+                const icon = document.getElementById('statusIcon');
+                const text = document.getElementById('statusText');
+                if (icon) {
+                    icon.classList.remove('text-success', 'text-danger');
+                    icon.classList.add(data.status === 'running' ? 'text-success' : 'text-danger');
+                }
+                if (text) {
+                    text.textContent = data.status === 'running' ? 'نشط' : 'متوقف';
+                }
+                // تبديل الزر في إجراءات سريعة دون إعادة تحميل
+                try {
+                    const container = document.querySelector('.card-body .d-grid');
+                    if (container) {
+                        if (data.status === 'running') {
+                            const startBtn = container.querySelector('button[onclick^="startBot"]');
+                            if (startBtn) startBtn.remove();
+                            if (!container.querySelector('button[onclick^="stopBot"]')) {
+                                const stop = document.createElement('button');
+                                stop.className = 'btn btn-danger';
+                                stop.setAttribute('onclick', `stopBot('${data.hostId}')`);
+                                const serviceType = '<%= hosting.serviceType %>';
+                                const stopText = serviceType === 'minecraft' ? 'إيقاف السيرفر' : 'إيقاف البوت';
+                                stop.innerHTML = `<i class="fas fa-stop-circle me-1"></i> ${stopText}`;
+                                container.prepend(stop);
+                            }
+                        } else {
+                            const stopBtn = container.querySelector('button[onclick^="stopBot"]');
+                            if (stopBtn) stopBtn.remove();
+                            if (!container.querySelector('button[onclick^="startBot"]')) {
+                                const start = document.createElement('button');
+                                start.className = 'btn btn-primary';
+                                start.setAttribute('onclick', `startBot('${data.hostId}')`);
+                                const serviceType = '<%= hosting.serviceType %>';
+                                const startText = serviceType === 'minecraft' ? 'تشغيل السيرفر' : 'تشغيل البوت';
+                                start.innerHTML = `<i class="fas fa-play-circle me-1"></i> ${startText}`;
+                                container.prepend(start);
+                            }
+                        }
+                    }
+                } catch (e) { }
+            });
+        } catch (e) { }
+
+        // نموذج تغيير إصدار Node
+        const changeBtn = document.getElementById('changeNodeBtn');
+        if (changeBtn) {
+            changeBtn.addEventListener('click', function () {
+                const modal = document.createElement('div');
+                modal.className = 'modal-overlay';
+                modal.innerHTML = `
+                    <div class="modal" role="dialog" aria-modal="true">
+                        <div class="modal-header">
+                            <h5 class="mb-0"><i class="fab fa-node-js me-1"></i> تغيير إصدار Node.js</h5>
+                            <button type="button" class="btn btn-sm" id="closeNodeModal"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="modal-body">
+                            <label class="info-label mb-2">اختر الإصدار</label>
+                            <select id="nodeVersionSelect" class="form-control">
+                                <option value="14">v14</option>
+                                <option value="16">v16</option>
+                                <option value="18">v18</option>
+                                <option value="20">v20</option>
+                            </select>
+                            <small class="text-muted d-block mt-2">قد تحتاج لإعادة تشغيل البوت بعد تغيير الإصدار.</small>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline" id="cancelNodeModal">إلغاء</button>
+                            <button type="button" class="btn btn-primary" id="saveNodeVersion">حفظ</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                const select = modal.querySelector('#nodeVersionSelect');
+                try {
+                    const current = (document.getElementById('currentNodeVersion')?.textContent || 'v16').replace('v', '');
+                    select.value = current;
+                } catch { }
+                function closeModal() { if (modal && modal.parentNode) modal.parentNode.removeChild(modal); }
+                modal.querySelector('#closeNodeModal').addEventListener('click', closeModal);
+                modal.querySelector('#cancelNodeModal').addEventListener('click', closeModal);
+                modal.querySelector('#saveNodeVersion').addEventListener('click', function () {
+                    const value = select.value;
+                    showSpinner();
+                    fetch(`/api/hosting/<%= hosting.id %>/settings`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nodeVersion: value })
+                    }).then(r => r.json()).then(data => {
+                        hideSpinner();
+                        if (data.success) {
+                            document.getElementById('currentNodeVersion').textContent = 'v' + value;
+                            showToast('تم تحديث إصدار Node.js', 'success');
+                            closeModal();
+                        } else {
+                            showToast('فشل في تحديث الإصدار', 'error');
+                        }
+                    }).catch(() => { hideSpinner(); showToast('خطأ في الاتصال', 'error'); });
+                });
+            });
+        }
+        // Tab navigation
+        const tabItems = document.querySelectorAll('.tab-item');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+
+        // Auto-switch to tab if hash is present
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+            const targetTab = document.querySelector(`.tab-item[data-tab="${hash}"]`);
+            if (targetTab) {
+                // Remove active from all
+                tabItems.forEach(item => item.classList.remove('active'));
+                tabPanes.forEach(pane => pane.classList.remove('active'));
+
+                // Set target as active
+                targetTab.classList.add('active');
+                const paneId = targetTab.getAttribute('data-tab');
+                document.getElementById(paneId).classList.add('active');
+            }
+        }
+
+        window.addEventListener('hashchange', function () {
+            const h = window.location.hash.substring(1);
+            if (h) {
+                const target = document.querySelector(`.tab-item[data-tab="${h}"]`);
+                if (target) target.click();
+            }
+        });
+
+        tabItems.forEach(tab => {
+            tab.addEventListener('click', function () {
+                const tabId = this.getAttribute('data-tab');
+
+                // Remove active class from all tabs and panes
+                tabItems.forEach(item => item.classList.remove('active'));
+                tabPanes.forEach(pane => pane.classList.remove('active'));
+
+                // Add active class to current tab and pane
+                this.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+
+                // Load logs if logs tab is clicked
+                if (tabId === 'logs') {
+                    loadLogs();
+                }
+            });
+        });
+
+        // Settings form submit
+        document.getElementById('hosting-settings-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            updateSettings();
+        });
+
+        // Auto-refresh logs if logs tab is active
+        if (document.getElementById('logs-tab').classList.contains('active')) {
+            loadLogs();
+            setInterval(loadLogs, 10000);
+        }
+    });
+
+    function loadLogs() {
+        const logsConsole = document.getElementById('logs-console');
+        fetch(`/api/hosting/<%= hosting.id %>/logs`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    logsConsole.innerHTML = '';
+                    data.logs.forEach(log => {
+                        const line = document.createElement('div');
+                        line.className = 'console-line';
+                        line.textContent = log;
+                        logsConsole.appendChild(line);
+                    });
+                    logsConsole.scrollTop = logsConsole.scrollHeight;
+                } else {
+                    logsConsole.innerHTML = '<div class="console-line text-danger">فشل في تحميل السجلات</div>';
+                }
+            })
+            .catch(err => {
+                logsConsole.innerHTML = '<div class="console-line text-danger">خطأ في الاتصال</div>';
+            });
+    }
+
+    function updateSettings() {
+        showSpinner();
+        const settings = {
+            name: document.getElementById('hosting-name').value,
+            mainFile: document.getElementById('main-file').value,
+            nodeVersion: document.getElementById('node-version').value,
+            serviceType: document.getElementById('service-type').value,
+            port: Number(document.getElementById('service-port').value) || undefined,
+            autoRestart: document.getElementById('auto-restart').checked,
+            publicAccess: document.getElementById('public-access').checked
+        };
+
+        saveData(`/api/hosting/<%= hosting.id %>/settings`, settings, 'تم حفظ الإعدادات بنجاح');
+    }
+
+    function saveStartupSettings() {
+        showSpinner();
+        const settings = {
+            startupCommand: document.getElementById('startup-command').value,
+            nodeVersion: document.getElementById('startup-node-version').value,
+            additionalPackages: document.getElementById('startup-packages').value
+        };
+
+        saveData(`/api/hosting/<%= hosting.id %>/settings`, settings, 'تم حفظ إعدادات التشغيل بنجاح');
+    }
+
+    function saveData(url, data, successMsg) {
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(res => {
+                hideSpinner();
+                if (res.success) {
+                    showToast(successMsg, 'success');
+                    if (data.nodeVersion) {
+                        const verSpan = document.getElementById('currentNodeVersion');
+                        if (verSpan) verSpan.textContent = 'v' + data.nodeVersion;
+                    }
+                } else {
+                    showToast(res.message || 'فشل الحفظ', 'error');
+                }
+            })
+            .catch(err => {
+                hideSpinner();
+                showToast('حدث خطأ في الاتصال', 'error');
+            });
+    }
+
+    function createBackup() {
+        showSpinner();
+        fetch(`/api/hosting/<%= hosting.id %>/backups/create`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                hideSpinner();
+                if (data.success) {
+                    showToast('جاري إنشاء النسخة الاحتياطية...', 'success');
+                    setTimeout(() => window.location.reload(), 2000);
+                } else {
+                    showToast(data.message || 'خطأ في إنشاء النسخة الاحتياطية', 'error');
+                }
+            }).catch(() => { hideSpinner(); showToast('خطأ في الاتصال', 'error'); });
+    }
+
+    function deleteBackup(backupId) {
+        if (!confirm('هل أنت متأكد من حذف هذه النسخة؟')) return;
+        showSpinner();
+        fetch(`/api/hosting/<%= hosting.id %>/backups/${backupId}`, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(data => {
+                hideSpinner();
+                if (data.success) {
+                    showToast('تم حذف النسخة بنجاح', 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast('فشل حذف النسخة', 'error');
+                }
+            }).catch(() => { hideSpinner(); showToast('خطأ في الاتصال', 'error'); });
+    }
+
+    function restoreBackup(backupId) {
+        if (!confirm('سيتم استبدال الملفات الحالية بمحتوى النسخة الاحتياطية. هل أنت متأكد؟')) return;
+        showSpinner();
+        fetch(`/api/hosting/<%= hosting.id %>/backups/${backupId}/restore`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                hideSpinner();
+                if (data.success) {
+                    showToast('تمت استعادة النسخة بنجاح', 'success');
+                } else {
+                    showToast(data.message || 'فشل استعادة النسخة', 'error');
+                }
+            }).catch(() => { hideSpinner(); showToast('خطأ في الاتصال', 'error'); });
+    }
+
+    function downloadBackup(backupId) {
+        window.open(`/api/hosting/<%= hosting.id %>/backups/${backupId}/download`, '_blank');
+    }
+
+    function deleteHosting(hostId) {
+        if (confirm('هل أنت متأكد من حذف هذه الاستضافة؟ هذا الإجراء لا يمكن التراجع عنه.')) {
+            showSpinner();
+            fetch(`/api/hosting/${hostId}/delete`, {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    hideSpinner();
+                    if (data.success) {
+                        showToast('تم حذف الاستضافة بنجاح', 'success');
+                        setTimeout(() => window.location.href = '/hostings', 1000);
+                    } else {
+                        showToast('فشل في حذف الاستضافة', 'error');
+                    }
+                })
+                .catch(err => {
+                    hideSpinner();
+                    showToast('حدث خطأ في الاتصال', 'error');
+                });
+        }
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('تم نسخ الرابط إلى الحافظة', 'success');
+        });
+    }
+
+    function stopBot(hostId) {
+        const logsConsole = document.getElementById('logs-console');
+        if (logsConsole) logsConsole.innerHTML = '<div class="console-line text-warning">جاري إيقاف التشغيل...</div>';
+
+        showSpinner();
+        fetch(`/api/hosting/${hostId}/stop`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                hideSpinner();
+                if (data.success) {
+                    const serviceType = '<%= hosting.serviceType %>';
+                    const stopMsg = serviceType === 'minecraft' ? 'تم إيقاف السيرفر بنجاح' : 'تم إيقاف البوت بنجاح';
+                    showToast(stopMsg, 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast('حدث خطأ أثناء إيقاف البوت', 'error');
+                }
+            })
+            .catch(err => {
+                hideSpinner();
+                showToast('حدث خطأ في الاتصال', 'error');
+            });
+    }
+
+    function startBot(hostId) {
+        const logsConsole = document.getElementById('logs-console');
+        if (logsConsole) logsConsole.innerHTML = '<div class="console-line text-success">جاري بدء التشغيل...</div>';
+
+        showSpinner();
+        fetch(`/api/hosting/${hostId}/start`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                hideSpinner();
+                if (data.success) {
+                    const serviceType = '<%= hosting.serviceType %>';
+                    const startMsg = serviceType === 'minecraft' ? 'تم تشغيل السيرفر بنجاح' : 'تم تشغيل البوت بنجاح';
+                    showToast(startMsg, 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast('حدث خطأ أثناء تشغيل البوت', 'error');
+                }
+            })
+            .catch(err => {
+                hideSpinner();
+                showToast('حدث خطأ في الاتصال', 'error');
+            });
+    }
+
+    function restartBot(hostId) {
+        const logsConsole = document.getElementById('logs-console');
+        if (logsConsole) logsConsole.innerHTML = '<div class="console-line text-info">جاري إعادة التشغيل...</div>';
+
+        showSpinner();
+        fetch(`/api/hosting/${hostId}/restart`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                hideSpinner();
+                if (data.success) {
+                    const serviceType = '<%= hosting.serviceType %>';
+                    const restartMsg = serviceType === 'minecraft' ? 'تم إعادة تشغيل السيرفر بنجاح' : 'تم إعادة تشغيل البوت بنجاح';
+                    showToast(restartMsg, 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast('حدث خطأ أثناء إعادة تشغيل البوت', 'error');
+                }
+            })
+            .catch(err => {
+                hideSpinner();
+                showToast('حدث خطأ في الاتصال', 'error');
+            });
+    }
+
+    function clearLogs(hostId) {
+        showSpinner();
+        fetch(`/api/hosting/${hostId}/clear-logs`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                hideSpinner();
+                if (data.success) {
+                    showToast('تم مسح السجلات بنجاح', 'success');
+                    if (document.getElementById('logs-console')) {
+                        document.getElementById('logs-console').innerHTML = '';
+                    }
+                } else {
+                    showToast('حدث خطأ أثناء مسح السجلات', 'error');
+                }
+            })
+            .catch(err => {
+                hideSpinner();
+                showToast('حدث خطأ في الاتصال', 'error');
+            });
+    }
+
+    function optimizeStorage(hostId) {
+        showSpinner();
+        fetch(`/api/hosting/${hostId}/optimize`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                hideSpinner();
+                if (data.success) {
+                    showToast('تم تحسين المساحة بنجاح', 'success');
+                } else {
+                    showToast('حدث خطأ أثناء تحسين المساحة', 'error');
+                }
+            })
+            .catch(err => {
+                hideSpinner();
+                showToast('حدث خطأ في الاتصال', 'error');
+            });
+    }
+
+    function openLogoUploadModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal" role="dialog" aria-modal="true">
+                <div class="modal-header">
+                    <h5 class="mb-0"><i class="fas fa-image me-1"></i> <%= hosting.logo ? 'تغيير لوجو الاستضافة' : 'إضافة لوجو للاستضافة' %></h5>
+                    <button type="button" class="btn btn-sm" id="closeLogoModal"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <form id="logoUploadForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="info-label mb-2">اختر صورة</label>
+                            <input type="file" id="logoFile" name="logo" accept="image/*" class="form-control" required>
+                            <small class="text-muted d-block mt-2">الصيغ المدعومة: JPG, PNG, GIF, WEBP, SVG (حد أقصى 5MB)</small>
+                        </div>
+                        <% if (hosting.logo) { %>
+                        <div class="mb-3">
+                            <label class="info-label mb-2">اللوجو الحالي</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="<%= hosting.logo %>" alt="Current logo" style="width: 100px; height: 100px; border-radius: 8px; object-fit: cover; border: 2px solid var(--border-color);">
+                                <button type="button" class="btn btn-danger btn-sm" onclick="deleteLogo('<%= hosting.id %>')">
+                                    <i class="fas fa-trash me-1"></i> حذف اللوجو
+                                </button>
+                            </div>
+                        </div>
+                        <% } %>
+                        <div id="logoPreview" class="mb-3" style="display: none;">
+                            <label class="info-label mb-2">معاينة الصورة</label>
+                            <img id="previewImage" src="" alt="Preview" style="width: 200px; height: 200px; border-radius: 8px; object-fit: cover; border: 2px solid var(--border-color);">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" id="cancelLogoModal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="uploadLogoBtn">
+                        <i class="fas fa-upload me-1"></i> رفع اللوجو
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        const fileInput = modal.querySelector('#logoFile');
+        const preview = modal.querySelector('#logoPreview');
+        const previewImage = modal.querySelector('#previewImage');
+
+        fileInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImage.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+
+        function closeModal() {
+            if (modal && modal.parentNode) modal.parentNode.removeChild(modal);
+        }
+
+        modal.querySelector('#closeLogoModal').addEventListener('click', closeModal);
+        modal.querySelector('#cancelLogoModal').addEventListener('click', closeModal);
+
+        modal.querySelector('#uploadLogoBtn').addEventListener('click', function () {
+            const file = fileInput.files[0];
+            if (!file) {
+                showToast('يرجى اختيار صورة', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('logo', file);
+
+            showSpinner();
+            fetch(`/api/hosting/<%= hosting.id %>/upload-logo`, {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    hideSpinner();
+                    if (data.success) {
+                        showToast('تم رفع اللوجو بنجاح', 'success');
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        showToast('فشل رفع اللوجو: ' + (data.message || ''), 'error');
+                    }
+                })
+                .catch(err => {
+                    hideSpinner();
+                    showToast('حدث خطأ في الاتصال', 'error');
+                });
+        });
+    }
+
+    function deleteLogo(hostId) {
+        if (!confirm('هل أنت متأكد من حذف اللوجو؟')) return;
+
+        showSpinner();
+        fetch(`/api/hosting/${hostId}/logo`, {
+            method: 'DELETE'
+        })
+            .then(response => response.json())
+            .then(data => {
+                hideSpinner();
+                if (data.success) {
+                    showToast('تم حذف اللوجو بنجاح', 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast('فشل حذف اللوجو', 'error');
+                }
+            })
+            .catch(err => {
+                hideSpinner();
+                showToast('حدث خطأ في الاتصال', 'error');
+            });
+    }
+
+    // تهيئة أشرطة التقدم
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.usage-bar').forEach(bar => {
+            const percentage = bar.getAttribute('data-percentage') || 0;
+            bar.style.width = percentage + '%';
+        });
+    });
+</script>

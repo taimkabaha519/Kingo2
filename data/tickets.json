@@ -1,0 +1,173 @@
+[
+  {
+    "id": "mfdc45tmnzht6v",
+    "subject": "test",
+    "type": "technical",
+    "details": "test",
+    "urgent": false,
+    "status": "closed",
+    "user": {
+      "id": "1312114318640156733",
+      "username": "sara24151",
+      "tag": "sara24151#0",
+      "avatar": "https://cdn.discordapp.com/avatars/1312114318640156733/8f5c60cb6187bf1e194ac44483bddd77.png"
+    },
+    "createdAt": "2025-09-10T02:02:35.002Z",
+    "updates": [
+      {
+        "at": "2025-09-11T04:23:26.302Z",
+        "by": "sara24151",
+        "status": "closed",
+        "note": "test"
+      }
+    ]
+  },
+  {
+    "id": "medamhc4hc7wb5",
+    "subject": "hi",
+    "type": "billing",
+    "details": "dsads",
+    "urgent": false,
+    "status": "closed",
+    "user": {
+      "id": "1307696672473743432",
+      "username": "29wq",
+      "tag": "29wq#0",
+      "avatar": "https://cdn.discordapp.com/avatars/1307696672473743432/e4c7b8423f72decc96a742170ed8c239.png"
+    },
+    "createdAt": "2025-08-15T20:41:08.164Z",
+    "updates": [
+      {
+        "at": "2025-08-15T20:41:22.433Z",
+        "by": "29wq",
+        "status": "open",
+        "note": "Status changed from open to open"
+      },
+      {
+        "at": "2025-08-15T20:41:49.335Z",
+        "by": "29wq",
+        "status": "closed",
+        "note": "Status changed from open to closed"
+      },
+      {
+        "at": "2025-08-15T20:51:25.742Z",
+        "by": "29wq",
+        "status": "open",
+        "note": "Status changed from closed to open"
+      },
+      {
+        "at": "2025-08-15T21:35:39.045Z",
+        "by": "29wq",
+        "status": "open",
+        "note": "Status changed from open to open"
+      },
+      {
+        "at": "2025-09-08T17:58:18.618Z",
+        "by": "sara24151",
+        "status": "open",
+        "note": "Status changed from open to open"
+      },
+      {
+        "at": "2025-09-10T01:09:35.020Z",
+        "by": "sara24151",
+        "status": "open",
+        "note": "Status changed from open to open"
+      },
+      {
+        "at": "2025-09-10T01:10:09.106Z",
+        "by": "sara24151",
+        "status": "closed",
+        "note": "Status changed from open to closed"
+      },
+      {
+        "at": "2025-09-10T01:28:16.165Z",
+        "by": "sara24151",
+        "status": "pending",
+        "note": "Status changed from closed to pending"
+      },
+      {
+        "at": "2025-09-10T01:28:17.452Z",
+        "by": "sara24151",
+        "status": "closed",
+        "note": "Status changed from pending to closed"
+      },
+      {
+        "at": "2025-09-10T01:28:20.555Z",
+        "by": "sara24151",
+        "status": "open",
+        "note": "Status changed from closed to open"
+      },
+      {
+        "at": "2025-09-10T01:28:32.309Z",
+        "by": "sara24151",
+        "status": "closed",
+        "note": "test"
+      }
+    ]
+  },
+  {
+    "id": "med2qhs127r3a1",
+    "subject": "qjhsjdk",
+    "type": "technical",
+    "details": "dhdka",
+    "urgent": false,
+    "status": "closed",
+    "user": {
+      "id": "1307696672473743432",
+      "username": "29wq",
+      "tag": "29wq#0",
+      "avatar": "https://cdn.discordapp.com/avatars/1307696672473743432/e4c7b8423f72decc96a742170ed8c239.png"
+    },
+    "createdAt": "2025-08-15T17:00:18.433Z",
+    "updates": [
+      {
+        "at": "2025-08-15T17:00:35.394Z",
+        "by": "29wq",
+        "status": "open",
+        "note": "Status changed from open to open"
+      },
+      {
+        "at": "2025-08-15T17:00:37.393Z",
+        "by": "29wq",
+        "status": "open",
+        "note": "Status changed from open to open"
+      },
+      {
+        "at": "2025-08-15T20:37:43.918Z",
+        "by": "29wq",
+        "status": "open",
+        "note": "Status changed from open to open"
+      },
+      {
+        "at": "2025-08-15T20:37:47.196Z",
+        "by": "29wq",
+        "status": "open",
+        "note": "Status changed from open to open"
+      },
+      {
+        "at": "2025-08-15T20:37:48.687Z",
+        "by": "29wq",
+        "status": "open",
+        "note": "Status changed from open to open"
+      },
+      {
+        "at": "2025-08-15T20:40:36.665Z",
+        "by": "29wq",
+        "status": "closed",
+        "note": "Status changed from open to closed"
+      },
+      {
+        "at": "2025-08-15T20:41:46.372Z",
+        "by": "29wq",
+        "status": "closed",
+        "note": "Status changed from closed to closed"
+      },
+      {
+        "at": "2025-09-10T01:10:11.820Z",
+        "by": "sara24151",
+        "status": "closed",
+        "note": "Status changed from closed to closed"
+      }
+    ]
+  }
+]

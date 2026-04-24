@@ -1,0 +1,82 @@
+<div class="hostings-page fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="slide-up"><i class="fas fa-server me-2"></i> استضافاتي</h2>
+            <p class="text-muted mb-0 slide-up" style="animation-delay: 0.1s;">كل البوتات التي اشتريتها أو تم إهداؤها لك</p>
+        </div>
+        <div class="slide-up" style="animation-delay: 0.2s;">
+            <a href="/" class="btn btn-outline me-2">
+                <i class="fas fa-home me-1"></i> الرئيسية
+            </a>
+            <% if (user) { %>
+            <a href="/buy-hosting" class="btn btn-primary">
+                <i class="fas fa-shopping-cart me-1"></i> شراء استضافة
+            </a>
+            <% } %>
+        </div>
+    </div>
+
+    <% if (!user) { %>
+        <div class="card p-4 text-center slide-up" style="animation-delay: 0.3s;">
+            <div class="card-icon">
+                <i class="fab fa-discord"></i>
+            </div>
+            <h3 class="mb-2">سجّل الدخول لعرض استضافاتك</h3>
+            <p class="text-muted mb-4">استخدم حساب ديسكورد الخاص بك للوصول إلى استضافاتك</p>
+            <div class="d-flex justify-content-center">
+                <a href="/auth/discord" class="btn btn-primary">
+                    <i class="fab fa-discord me-2"></i> تسجيل الدخول
+                </a>
+            </div>
+        </div>
+    <% } else if (!hostings || hostings.length === 0) { %>
+        <div class="card p-5 text-center slide-up" style="animation-delay: 0.3s;">
+            <div class="card-icon">
+                <i class="fas fa-server"></i>
+            </div>
+            <h3 class="mb-2">لا توجد استضافات حتى الآن</h3>
+            <p class="text-muted mb-4">قم بإنشاء أو شراء استضافة لتظهر هنا</p>
+            <div class="d-flex justify-content-center">
+                <a href="/buy-hosting" class="btn btn-primary">
+                    <i class="fas fa-shopping-cart me-1"></i> شراء استضافة جديدة
+                </a>
+            </div>
+        </div>
+    <% } else { %>
+        <div class="grid grid-3 slide-up" style="animation-delay: 0.3s;">
+            <% hostings.forEach((h, index) => { %>
+                <% const delay = 0.3 + (index * 0.1); %>
+                <div class="hosting-card" style="animation-delay: <%= delay %>s;">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center gap-2">
+                            <% if (h.logo) { %>
+                                <img src="<%= h.logo %>" alt="<%= h.name %>" class="hosting-logo-small" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover;">
+                            <% } %>
+                            <h5 class="hosting-name mb-0"><%= h.name %></h5>
+                        </div>
+                        <div class="status-indicator <%= h.status === 'running' ? 'running' : '' %>"></div>
+                    </div>
+                    <div class="hosting-card-body">
+                        <div class="hosting-info">
+                            <span class="badge"><i class="far fa-calendar me-1"></i> <%= h.expiryDate || 'غير محدد' %></span>
+                            <span class="badge bg-dark text-uppercase"><i class="fas fa-tags me-1"></i> <%= (h.serviceType||'discord') %></span>
+                            <% if (h.serviceType !== 'web' && (h.serviceType==='mta' || h.serviceType==='minecraft' || h.serviceType==='fivem')) { %>
+                                <span class="badge bg-danger">غير متوفر حالياً</span>
+                            <% } %>
+                        </div>
+                        <div class="hosting-info">
+                            <% const _ip = (process.env.SERVER_ADDRESS || '143.14.44.57:3000').split(':')[0]; %>
+                            <% const _port = h.port || (h.serviceType==='mta'?22003:(h.serviceType==='fivem'?30120:(h.serviceType==='minecraft'?25565:3000))); %>
+                            <span class="ip-address" title="IP:PORT"><i class="fas fa-network-wired me-1"></i> <%= _ip %>:<%= _port %></span>
+                        </div>
+                    </div>
+                    <div class="hosting-card-footer">
+                        <a class="btn btn-sm btn-primary" href="/hosting/<%= h.id %>">
+                            <i class="fas fa-info-circle me-1"></i> تفاصيل
+                        </a>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    <% } %>
+</div>

@@ -1,0 +1,20 @@
+{
+  "hostingRoomId": "1401293125439193131",
+  "adminRoomId": "1412356084747866112",
+  "discountCodes": {},
+  "paymentEnabled": true,
+  "prices": {
+    "3_days": 1,
+    "1_week": 20,
+    "1_month": 50,
+    "3_months": 120,
+    "1_year": 400
+  },
+  "probotTax": 0.053,
+  "probotid": "282859044593598464",
+  "ownerid": "1092446133944582216",
+  "ownersid": [
+    "1092446133944582216",
+    "925438817987608596"
+  ]
+}

@@ -1,0 +1,318 @@
+<div class="support-page fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="slide-up"><i class="fas fa-headset me-2"></i> الدعم الفني</h2>
+        <div class="slide-up" style="animation-delay: 0.1s;">
+            <a href="/" class="btn btn-outline">
+                <i class="fas fa-home me-1"></i> الرئيسية
+            </a>
+        </div>
+    </div>
+    
+    <% if (user && tickets && tickets.length > 0) { %>
+    <div class="card mb-4 slide-up" style="animation-delay: 0.15s;">
+        <div class="card-header">
+            <h4 class="mb-0"><i class="fas fa-ticket-alt me-1"></i> تذاكرك</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>الموضوع</th>
+                            <th>النوع</th>
+                            <th>الحالة</th>
+                            <th>تاريخ الإنشاء</th>
+                            <th>آخر تحديث</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% tickets.forEach(ticket => { %>
+                        <tr>
+                            <td><%= ticket.subject %></td>
+                            <td><%= ticket.type %></td>
+                            <td>
+                                <span class="badge <%= ticket.status==='open'?'bg-success':ticket.status==='pending'?'bg-dark':'bg-danger' %>">
+                                    <%= ticket.status %>
+                                </span>
+                            </td>
+                            <td><%= new Date(ticket.createdAt).toLocaleDateString('ar-EG') %></td>
+                            <td>
+                                <% if (ticket.updates && ticket.updates.length > 0) { %>
+                                    <%= new Date(ticket.updates[ticket.updates.length-1].at).toLocaleDateString('ar-EG') %>
+                                <% } else { %>
+                                    -
+                                <% } %>
+                            </td>
+                            <td>
+                                <a href="/support/ticket/<%= ticket.id %>" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-comments me-1"></i> عرض المحادثة
+                                </a>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <% } %>
+
+    <div class="grid grid-2 slide-up" style="animation-delay: 0.2s;">
+    <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-ticket-alt me-1"></i> فتح تذكرة دعم</h4>
+            </div>
+            <div class="card-body">
+                <form id="support-form">
+                    <div class="grid grid-2 mb-3">
+                        <div class="form-group">
+                            <label for="subject">الموضوع</label>
+                            <input type="text" id="subject" class="form-control" placeholder="اكتب عنواناً واضحاً للمشكلة" required>
+          </div>
+                        <div class="form-group">
+                            <label for="type">نوع المشكلة</label>
+                            <select id="type" class="form-control" required>
+                                <option value="">-- اختر نوع المشكلة --</option>
+                                <option value="technical">دعم فني</option>
+                                <option value="billing">مشكلة في الدفع</option>
+                                <option value="suggestion">اقتراح</option>
+                                <option value="complaint">شكوى</option>
+                                <option value="other">أخرى</option>
+            </select>
+          </div>
+        </div>
+                    <div class="form-group mb-3">
+                        <label for="details">تفاصيل المشكلة</label>
+                        <textarea id="details" class="form-control" rows="6" placeholder="اشرح المشكلة بالتفصيل، وأرفق أي معلومات قد تساعدنا في حلها" required></textarea>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="attachment">إرفاق ملف (اختياري)</label>
+                        <input type="file" id="attachment" class="form-control">
+                        <small class="text-muted">يمكنك إرفاق لقطات شاشة أو ملفات سجل الأخطاء (الحد الأقصى: 5 ميجابايت)</small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="form-check">
+                            <input type="checkbox" id="urgent" class="form-check-input">
+                            <label for="urgent" class="form-check-label">مشكلة عاجلة</label>
+        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-1"></i> إرسال التذكرة
+                        </button>
+        </div>
+      </form>
+    </div>
+        </div>
+        
+        <div>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-question-circle me-1"></i> الأسئلة الشائعة</h4>
+                </div>
+                <div class="card-body">
+                    <div class="accordion">
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <i class="fas fa-chevron-right"></i> كيف يمكنني إعادة تشغيل البوت؟
+                            </div>
+                            <div class="accordion-content">
+                                يمكنك إعادة تشغيل البوت من خلال الذهاب إلى صفحة تفاصيل الاستضافة، ثم النقر على زر "إعادة تشغيل". يمكنك أيضاً استخدام صفحة وحدة التحكم (الكونسول) للقيام بذلك.
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <i class="fas fa-chevron-right"></i> كيف يمكنني تحديث إصدار Node.js؟
+                            </div>
+                            <div class="accordion-content">
+                                يمكنك تغيير إصدار Node.js من خلال الذهاب إلى صفحة تفاصيل الاستضافة، ثم الانتقال إلى تبويب "الإعدادات"، واختيار الإصدار المطلوب من القائمة المنسدلة.
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <i class="fas fa-chevron-right"></i> كيف يمكنني رفع ملفات للاستضافة؟
+                            </div>
+                            <div class="accordion-content">
+                                يمكنك رفع الملفات من خلال صفحة إدارة الملفات. انتقل إلى المجلد المطلوب، ثم انقر على زر "رفع ملف". يمكنك أيضاً رفع ملف مضغوط (ZIP) واستخراجه مباشرة.
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <div class="accordion-header">
+                                <i class="fas fa-chevron-right"></i> كيف يمكنني الحصول على رابط الوصول العام؟
+                            </div>
+                            <div class="accordion-content">
+                                رابط الوصول العام متاح في صفحة تفاصيل الاستضافة. تأكد من تفعيل خيار "السماح بالوصول العام" في إعدادات الاستضافة أولاً.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-link me-1"></i> روابط مفيدة</h4>
+                </div>
+                <div class="card-body">
+                    <div class="useful-links">
+                        <a href="/dashboard" class="useful-link">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>لوحة التحكم</span>
+                        </a>
+                        <a href="/hostings" class="useful-link">
+                            <i class="fas fa-server"></i>
+                            <span>استضافاتي</span>
+                        </a>
+                        <a href="https://discord.gg/ryrdrQzHqS" target="_blank" class="useful-link">
+                            <i class="fab fa-discord"></i>
+                            <span>سيرفر الديسكورد</span>
+                        </a>
+                        <a href="/docs" class="useful-link">
+                            <i class="fas fa-book"></i>
+                            <span>التوثيق</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Accordion functionality
+        const accordionItems = document.querySelectorAll('.accordion-item');
+        
+        accordionItems.forEach(item => {
+            const header = item.querySelector('.accordion-header');
+            const content = item.querySelector('.accordion-content');
+            
+            header.addEventListener('click', () => {
+                // Close all other items
+                accordionItems.forEach(otherItem => {
+                    if (otherItem !== item) {
+                        otherItem.classList.remove('active');
+                        otherItem.querySelector('.accordion-content').style.maxHeight = null;
+                        otherItem.querySelector('.accordion-header i').classList.remove('fa-chevron-down');
+                        otherItem.querySelector('.accordion-header i').classList.add('fa-chevron-right');
+                    }
+                });
+                
+                // Toggle current item
+                item.classList.toggle('active');
+                const icon = header.querySelector('i');
+                
+                if (item.classList.contains('active')) {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    icon.classList.remove('fa-chevron-right');
+                    icon.classList.add('fa-chevron-down');
+                } else {
+                    content.style.maxHeight = null;
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-right');
+                }
+            });
+        });
+        
+        // Form submission
+        document.getElementById('support-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const subject = document.getElementById('subject').value;
+            const type = document.getElementById('type').value;
+            const details = document.getElementById('details').value;
+            const urgent = document.getElementById('urgent').checked;
+            
+            if (!subject || !type || !details) {
+                showToast('يرجى ملء جميع الحقول المطلوبة', 'error');
+                return;
+            }
+            
+            // Show loading
+            showSpinner();
+            
+            // Send to server
+            fetch('/api/tickets', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    subject,
+                    type,
+                    details,
+                    urgent
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideSpinner();
+                if (data.success) {
+                    showToast('تم إرسال طلب الدعم بنجاح، سنتواصل معك قريباً', 'success');
+                    
+                    // Reset form
+                    document.getElementById('support-form').reset();
+                    
+                    // Redirect to ticket chat after a short delay
+                    setTimeout(() => {
+                        window.location.href = `/support/ticket/${data.ticket.id}`;
+                    }, 1500);
+                } else {
+                    showToast('حدث خطأ أثناء إرسال التذكرة', 'error');
+                }
+            })
+            .catch(error => {
+                hideSpinner();
+                console.error('Error:', error);
+                showToast('حدث خطأ في الاتصال', 'error');
+            });
+        });
+    });
+    
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <div class="toast-content">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                <span>${message}</span>
+            </div>
+            <div class="toast-progress"></div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10);
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 3000);
+    }
+    
+    // Loading spinner
+    let spinnerCount = 0;
+    const spinner = document.createElement('div');
+    spinner.className = 'global-spinner';
+    spinner.innerHTML = '<div class="spinner"></div>';
+
+    function showSpinner() {
+        if (spinnerCount === 0) {
+            document.body.appendChild(spinner);
+            document.body.classList.add('loading');
+        }
+        spinnerCount++;
+    }
+
+    function hideSpinner() {
+        spinnerCount = Math.max(0, spinnerCount - 1);
+        if (spinnerCount === 0) {
+            document.body.classList.remove('loading');
+            if (spinner.parentNode) {
+                spinner.parentNode.removeChild(spinner);
+            }
+        }
+    }
+</script>

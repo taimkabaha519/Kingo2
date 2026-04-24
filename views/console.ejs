@@ -1,0 +1,603 @@
+<div class="console-page fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="slide-up"><i class="fas fa-terminal me-2"></i> وحدة التحكم - <%= hosting.name %>
+        </h2>
+        <div class="slide-up" style="animation-delay: 0.1s;">
+            <button id="clear-console" class="btn btn-outline me-2">
+                <i class="fas fa-eraser me-1"></i> مسح
+            </button>
+            <a href="/hosting/<%= hosting.id %>" class="btn btn-primary">
+                <i class="fas fa-cog me-1"></i> لوحة التحكم
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-3-1 slide-up" style="animation-delay: 0.2s;">
+        <div>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-terminal me-1"></i> مخرجات وحدة التحكم</h4>
+                        <div class="status-indicator <%= hosting.status === 'running' ? 'running' : '' %>"></div>
+                    </div>
+                </div>
+                <div class="console-wrapper">
+                    <div id="console-output" class="console" data-host-id="<%= hosting.id %>">
+                        <!-- Console output will be populated here -->
+                        <div class="console-line">جاري تحميل مخرجات وحدة التحكم...</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="input-group input-group-enhanced">
+                        <input type="text" id="command-input" class="form-control"
+                            placeholder="أدخل الأمر هنا... (مثال: npm install, ls, pwd, node index.js)">
+                        <button id="send-command" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+
+                    <!-- اقتراحات الأوامر -->
+                    <div class="command-suggestions mt-2">
+                        <small class="text-muted">أوامر مفيدة:</small>
+                        <div class="d-flex flex-wrap gap-1 mt-1">
+                            <button class="btn btn-outline btn-sm" onclick="insertCommand('npm install')">npm
+                                install</button>
+                            <button class="btn btn-outline btn-sm" onclick="insertCommand('npm start')">npm
+                                start</button>
+                            <button class="btn btn-outline btn-sm" onclick="insertCommand('ls')">ls</button>
+                            <button class="btn btn-outline btn-sm" onclick="insertCommand('pwd')">pwd</button>
+                            <button class="btn btn-outline btn-sm" onclick="insertCommand('node index.js')">node
+                                index.js</button>
+                            <button class="btn btn-outline btn-sm" onclick="insertCommand('npm list')">npm list</button>
+                            <button class="btn btn-outline btn-sm" onclick="insertCommand('npm update')">npm
+                                update</button>
+                            <button class="btn btn-outline btn-sm" onclick="insertCommand('npm audit')">npm
+                                audit</button>
+                        </div>
+                    </div>
+
+                    <!-- تمت إزالة أزرار التحكم المكررة هنا والاكتفاء بزر واحد في إجراءات سريعة -->
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-info-circle me-1"></i> معلومات الاستضافة</h4>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <div class="info-label">اسم الاستضافة</div>
+                        <div>
+                            <%= hosting.name %>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">الحالة</div>
+                        <div>
+                            <span class="badge <%= hosting.status === 'running' ? 'bg-success' : 'bg-danger' %>">
+                                <%= hosting.status==='running' ? 'نشط' : 'متوقف' %>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">تاريخ الإنشاء</div>
+                        <div>
+                            <%= hosting.createdAt %>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">تاريخ الانتهاء</div>
+                        <div>
+                            <%= hosting.expiryDate %>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">المساحة المستخدمة</div>
+                        <div>
+                            <%= hosting.usedStorage %>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">وقت التشغيل</div>
+                        <div>
+                            <%= hosting.uptime %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-cogs me-1"></i> إجراءات سريعة</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <% if (hosting.status==='running' ) { %>
+                            <button class="btn btn-danger" onclick="stopBot('<%= hosting.id %>')">
+                                <i class="fas fa-stop-circle me-1"></i>
+                                <%= hosting.serviceType==='minecraft' ? 'ايقاف سيرفر' : 'إيقاف البوت' %>
+                            </button>
+                            <button class="btn btn-primary" onclick="restartBot('<%= hosting.id %>')">
+                                <i class="fas fa-sync me-1"></i>
+                                <%= hosting.serviceType==='minecraft' ? 'اعادة تشغيل سيرفر' : 'إعادة تشغيل البوت' %>
+                            </button>
+                            <% } else { %>
+                                <button class="btn btn-primary" onclick="startBot('<%= hosting.id %>')">
+                                    <i class="fas fa-play-circle me-1"></i>
+                                    <%= hosting.serviceType==='minecraft' ? 'تشغيل سيرفر' : 'تشغيل البوت' %>
+                                </button>
+                                <% } %>
+                                    <a href="/files/<%= hosting.id %>" class="btn">
+                                        <i class="fas fa-folder me-1"></i> إدارة الملفات
+                                    </a>
+                                    <button class="btn" onclick="clearLogs('<%= hosting.id %>')">
+                                        <i class="fas fa-eraser me-1"></i> مسح السجلات
+                                    </button>
+                                    <button class="btn" onclick="optimizeStorage('<%= hosting.id %>')">
+                                        <i class="fas fa-broom me-1"></i> تحسين المساحة
+                                    </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const consoleOutput = document.getElementById('console-output');
+        const commandInput = document.getElementById('command-input');
+        const sendCommand = document.getElementById('send-command');
+        const clearConsole = document.getElementById('clear-console');
+        const hostId = consoleOutput.getAttribute('data-host-id');
+
+        // منع التهيئة المكررة من السكربت العام
+        window.__consoleInit = true;
+
+        // تخزين محلي لرسائل الكونسل حسب الاستضافة
+        const storageKey = `console_logs_${hostId}`;
+
+        function loadSavedLogs() {
+            try {
+                const raw = localStorage.getItem(storageKey);
+                if (!raw) return [];
+                const items = JSON.parse(raw);
+                if (!Array.isArray(items)) return [];
+                return items;
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveLogs(items) {
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(items));
+            } catch (e) { }
+        }
+
+        function appendAndPersist(element) {
+            consoleOutput.appendChild(element);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+            // حفظ العنصر في التخزين المحلي كـ HTML للحفاظ على الستايل
+            const current = loadSavedLogs();
+            current.push({ html: element.outerHTML });
+            // تحديد حد أقصى لعدد السطور لتفادي تضخم التخزين
+            const MAX_LINES = 1000;
+            const trimmed = current.slice(-MAX_LINES);
+            saveLogs(trimmed);
+        }
+
+        function renderSavedLogsIfAny() {
+            const saved = loadSavedLogs();
+            if (saved.length === 0) return false;
+            consoleOutput.innerHTML = '';
+            saved.forEach(item => {
+                if (item && item.html) {
+                    const wrapper = document.createElement('div');
+                    wrapper.innerHTML = item.html;
+                    const node = wrapper.firstElementChild;
+                    if (node) consoleOutput.appendChild(node);
+                }
+            });
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+            return true;
+        }
+
+        let socket = io();
+
+        // Connect to socket.io for real-time console updates
+        socket.on('connect', function () {
+            console.log('Connected to socket.io server');
+            socket.emit('join-console', hostId);
+        });
+
+        socket.on('console-output', function (data) {
+            const line = document.createElement('div');
+            line.className = 'console-line';
+
+            // تحديد نوع الرسالة
+            if (typeof data === 'string') {
+                line.textContent = data;
+            } else if (data && data.message) {
+                // إضافة لون حسب نوع الرسالة
+                if (data.type === 'error') {
+                    line.className += ' text-danger';
+                    line.innerHTML = `<span class="text-danger">❌ ${data.message}</span>`;
+                } else if (data.type === 'info') {
+                    line.className += ' text-info';
+                    line.innerHTML = `<span class="text-info">ℹ️ ${data.message}</span>`;
+                } else if (data.type === 'success') {
+                    line.className += ' text-success';
+                    line.innerHTML = `<span class="text-success">✅ ${data.message}</span>`;
+                } else if (data.type === 'warning') {
+                    line.className += ' text-warning';
+                    line.innerHTML = `<span class="text-warning">⚠️ ${data.message}</span>`;
+                } else {
+                    line.textContent = data.message;
+                }
+
+                // إضافة الوقت إذا كان متوفراً
+                if (data.timestamp) {
+                    const time = new Date(data.timestamp).toLocaleTimeString('ar-SA');
+                    line.innerHTML += ` <span class="text-muted" style="font-size: 0.8em;">[${time}]</span>`;
+                }
+            } else {
+                line.textContent = '';
+            }
+
+            appendAndPersist(line);
+        });
+
+        // Load initial console output
+        const hadSaved = renderSavedLogsIfAny();
+        if (!hadSaved) {
+            fetch(`/api/hosting/${hostId}/logs`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && Array.isArray(data.logs)) {
+                        consoleOutput.innerHTML = '';
+                        const items = [];
+                        data.logs.forEach(line => {
+                            const lineEl = document.createElement('div');
+                            lineEl.className = 'console-line';
+                            lineEl.textContent = line;
+                            consoleOutput.appendChild(lineEl);
+                            items.push({ html: lineEl.outerHTML });
+                        });
+                        saveLogs(items.slice(-1000));
+                        consoleOutput.scrollTop = consoleOutput.scrollHeight;
+                    } else {
+                        consoleOutput.innerHTML = '<div class="console-line text-danger">فشل في تحميل مخرجات وحدة التحكم</div>';
+                    }
+                })
+                .catch(err => {
+                    consoleOutput.innerHTML = '<div class="console-line text-danger">خطأ في الاتصال</div>';
+                });
+        }
+
+        // Send command
+        function sendConsoleCommand() {
+            if (commandInput.value.trim() === '') return;
+
+            const command = commandInput.value;
+            commandInput.value = '';
+
+            // حفظ الأمر في التاريخ
+            saveToHistory(command);
+
+            // عرض الأمر المرسل
+            const commandLine = document.createElement('div');
+            commandLine.className = 'console-line console-command';
+            commandLine.innerHTML = `<span class="text-primary">> ${command}</span> <span class="text-muted" style="font-size: 0.8em;">[${new Date().toLocaleTimeString('ar-SA')}]</span>`;
+            appendAndPersist(commandLine);
+
+            // إرسال الأمر
+            fetch(`/api/hosting/${hostId}/command`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ command })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // عرض النتيجة
+                    if (data.success) {
+                        if (data.output) {
+                            const outputLines = data.output.split('\n');
+                            outputLines.forEach(line => {
+                                if (line.trim()) {
+                                    const outputLine = document.createElement('div');
+                                    outputLine.className = 'console-line text-success';
+                                    outputLine.textContent = line;
+                                    appendAndPersist(outputLine);
+                                }
+                            });
+                        }
+                    } else {
+                        // عرض الخطأ
+                        const errorLine = document.createElement('div');
+                        errorLine.className = 'console-line text-danger';
+                        errorLine.innerHTML = `❌ خطأ: ${data.error || 'حدث خطأ غير معروف'}`;
+                        appendAndPersist(errorLine);
+
+                        // عرض المخرجات حتى لو فشل الأمر
+                        if (data.output) {
+                            const outputLines = data.output.split('\n');
+                            outputLines.forEach(line => {
+                                if (line.trim()) {
+                                    const outputLine = document.createElement('div');
+                                    outputLine.className = 'console-line text-warning';
+                                    outputLine.textContent = line;
+                                    appendAndPersist(outputLine);
+                                }
+                            });
+                        }
+                    }
+
+                    // إضافة خط فاصل
+                    const separator = document.createElement('div');
+                    separator.className = 'console-line text-muted';
+                    separator.innerHTML = '─'.repeat(50);
+                    appendAndPersist(separator);
+                })
+                .catch(err => {
+                    const errorLine = document.createElement('div');
+                    errorLine.className = 'console-line text-danger';
+                    errorLine.innerHTML = `❌ خطأ في إرسال الأمر: ${err.message}`;
+                    appendAndPersist(errorLine);
+                });
+        }
+
+        sendCommand.addEventListener('click', sendConsoleCommand);
+
+        commandInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendConsoleCommand();
+            }
+        });
+
+        // Clear console
+        clearConsole.addEventListener('click', function () {
+            consoleOutput.innerHTML = '';
+            try { localStorage.removeItem(storageKey); } catch (e) { }
+        });
+
+        // دالة إدراج الأمر في شريط الإدخال
+        window.insertCommand = function (command) {
+            commandInput.value = command;
+            commandInput.focus();
+        };
+
+        // دعم الأوامر السابقة (تاريخ الأوامر)
+        let commandHistory = [];
+        let historyIndex = -1;
+
+        commandInput.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    commandInput.value = commandHistory[commandHistory.length - 1 - historyIndex];
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    commandInput.value = commandHistory[commandHistory.length - 1 - historyIndex];
+                } else if (historyIndex === 0) {
+                    historyIndex = -1;
+                    commandInput.value = '';
+                }
+            }
+        });
+
+        // حفظ الأمر في التاريخ
+        function saveToHistory(command) {
+            if (command.trim() && commandHistory[commandHistory.length - 1] !== command) {
+                commandHistory.push(command);
+                if (commandHistory.length > 50) {
+                    commandHistory.shift(); // إزالة الأوامر القديمة
+                }
+            }
+            historyIndex = -1;
+        }
+
+        // Bot control buttons
+        const startBot = document.getElementById('start-bot');
+        const stopBot = document.getElementById('stop-bot');
+        const restartBot = document.getElementById('restart-bot');
+        const installLibraries = document.getElementById('install-libraries');
+
+        if (startBot) {
+            startBot.addEventListener('click', function () {
+                socket.emit('start-bot', { hostId: hostId });
+                this.disabled = true;
+                if (stopBot) stopBot.disabled = false;
+            });
+        }
+
+        if (stopBot) {
+            stopBot.addEventListener('click', function () {
+                socket.emit('stop-bot', { hostId: hostId });
+                this.disabled = true;
+                if (startBot) startBot.disabled = false;
+            });
+        }
+
+        if (restartBot) {
+            restartBot.addEventListener('click', function () {
+                socket.emit('restart-bot', { hostId: hostId });
+            });
+        }
+
+        if (installLibraries) {
+            installLibraries.addEventListener('click', function () {
+                socket.emit('install-libraries', { hostId: hostId });
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التثبيت...';
+            });
+        }
+
+        function updateStatusUI(newStatus) {
+            const indicator = document.querySelector('.status-indicator');
+            if (indicator) {
+                if (newStatus === 'running') {
+                    indicator.classList.add('running');
+                } else {
+                    indicator.classList.remove('running');
+                }
+            }
+        }
+
+        // Update button states when bot status changes
+        socket.on('bot-status-changed', function (data) {
+            if (data.hostId === hostId) {
+                if (data.status === 'running') {
+                    if (startBot) startBot.disabled = true;
+                    if (stopBot) stopBot.disabled = false;
+                } else {
+                    if (startBot) startBot.disabled = false;
+                    if (stopBot) stopBot.disabled = true;
+                }
+                updateStatusUI(data.status);
+            }
+        });
+
+        // Handle install libraries completion
+        socket.on('install-libraries-complete', function (data) {
+            if (installLibraries) {
+                installLibraries.disabled = false;
+                installLibraries.innerHTML = '<i class="fas fa-download"></i> تثبيت المكتبات';
+            }
+        });
+    });
+
+    function stopBot(hostId) {
+        const consoleOutput = document.getElementById('console-output');
+        if (consoleOutput) {
+            consoleOutput.innerHTML = '<div class="console-line text-warning">جاري إيقاف التشغيل...</div>';
+            const currentHostId = '<%= hosting.id %>';
+            try { localStorage.removeItem(`console_logs_${currentHostId}`); } catch (e) { }
+        }
+
+        showSpinner();
+        fetch(`/api/hosting/${hostId}/stop`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                hideSpinner();
+                if (data.success) {
+                    const serviceType = '<%= hosting.serviceType %>';
+                    const msg = serviceType === 'minecraft' ? 'تم إيقاف السيرفر بنجاح' : 'تم إيقاف البوت بنجاح';
+                    showToast(msg, 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    const serviceType = '<%= hosting.serviceType %>';
+                    const msg = serviceType === 'minecraft' ? 'حدث خطأ أثناء إيقاف السيرفر' : 'حدث خطأ أثناء إيقاف البوت';
+                    showToast(msg, 'error');
+                }
+            })
+            .catch(err => {
+                hideSpinner();
+                showToast('حدث خطأ في الاتصال', 'error');
+            });
+    }
+
+    function startBot(hostId) {
+        const consoleOutput = document.getElementById('console-output');
+        if (consoleOutput) {
+            consoleOutput.innerHTML = '<div class="console-line text-success">جاري بدء التشغيل...</div>';
+            const currentHostId = '<%= hosting.id %>';
+            try { localStorage.removeItem(`console_logs_${currentHostId}`); } catch (e) { }
+        }
+
+        showSpinner();
+        fetch(`/api/hosting/${hostId}/start`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                hideSpinner();
+                if (data.success) {
+                    const serviceType = '<%= hosting.serviceType %>';
+                    const msg = serviceType === 'minecraft' ? 'تم تشغيل السيرفر بنجاح' : 'تم تشغيل البوت بنجاح';
+                    showToast(msg, 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    const serviceType = '<%= hosting.serviceType %>';
+                    const msg = serviceType === 'minecraft' ? 'حدث خطأ أثناء تشغيل السيرفر' : 'حدث خطأ أثناء تشغيل البوت';
+                    showToast(msg, 'error');
+                }
+            })
+            .catch(err => {
+                hideSpinner();
+                showToast('حدث خطأ في الاتصال', 'error');
+            });
+    }
+
+    function restartBot(hostId) {
+        const consoleOutput = document.getElementById('console-output');
+        if (consoleOutput) {
+            consoleOutput.innerHTML = '<div class="console-line text-info">جاري إعادة التشغيل...</div>';
+            const currentHostId = '<%= hosting.id %>';
+            try { localStorage.removeItem(`console_logs_${currentHostId}`); } catch (e) { }
+        }
+
+        showSpinner();
+        fetch(`/api/hosting/${hostId}/restart`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                hideSpinner();
+                if (data.success) {
+                    const serviceType = '<%= hosting.serviceType %>';
+                    const msg = serviceType === 'minecraft' ? 'تم إعادة تشغيل السيرفر بنجاح' : 'تم إعادة تشغيل البوت بنجاح';
+                    showToast(msg, 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    const serviceType = '<%= hosting.serviceType %>';
+                    const msg = serviceType === 'minecraft' ? 'حدث خطأ أثناء إعادة تشغيل السيرفر' : 'حدث خطأ أثناء إعادة تشغيل البوت';
+                    showToast(msg, 'error');
+                }
+            })
+            .catch(err => {
+                hideSpinner();
+                showToast('حدث خطأ في الاتصال', 'error');
+            });
+    }
+
+    function clearLogs(hostId) {
+        showSpinner();
+        fetch(`/api/hosting/${hostId}/clear-logs`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                hideSpinner();
+                if (data.success) {
+                    showToast('تم مسح السجلات بنجاح', 'success');
+                } else {
+                    showToast('حدث خطأ أثناء مسح السجلات', 'error');
+                }
+            })
+            .catch(err => {
+                hideSpinner();
+                showToast('حدث خطأ في الاتصال', 'error');
+            });
+    }
+
+    function optimizeStorage(hostId) {
+        showSpinner();
+        fetch(`/api/hosting/${hostId}/optimize`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                hideSpinner();
+                if (data.success) {
+                    showToast('تم تحسين المساحة بنجاح', 'success');
+                } else {
+                    showToast('حدث خطأ أثناء تحسين المساحة', 'error');
+                }
+            })
+            .catch(err => {
+                hideSpinner();
+                showToast('حدث خطأ في الاتصال', 'error');
+            });
+    }
+</script>

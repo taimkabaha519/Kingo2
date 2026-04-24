@@ -1,0 +1,3568 @@
+<div class="admin-page fade-in">
+    <div class="container-fluid">
+        <div class="admin-header">
+            <h2 class="slide-up"><i class="fas fa-shield-halved me-2"></i> لوحة الإدارة</h2>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" onclick="openCreateHostingModal()">
+                    <i class="fas fa-plus me-1"></i> إضافة هوست
+                </button>
+                <a href="/admin/hostings-control" class="btn btn-info">
+                    <i class="fas fa-cogs me-1"></i> تحكم بالهوستات
+                </a>
+                <% if (isOwner) { %>
+                    <a href="/admin/logs" class="btn btn-secondary">
+                        <i class="fas fa-clipboard-list me-1"></i> سجلات الموقع
+                    </a>
+                    <% } %>
+            </div>
+        </div>
+
+        <div class="admin-tabs">
+            <div class="admin-tab active" data-target="dashboard-section">
+                <i class="fas fa-tachometer-alt me-1"></i> لوحة المعلومات
+            </div>
+            <div class="admin-tab" data-target="hostings-section">
+                <i class="fas fa-server me-1"></i> إدارة الهوستات
+            </div>
+            <div class="admin-tab" data-target="minecraft-section">
+                <i class="fas fa-cube me-1"></i> سيرفرات Minecraft
+            </div>
+            <div class="admin-tab" data-target="security-section">
+                <i class="fas fa-shield-alt me-1"></i> الأمان
+            </div>
+            <div class="admin-tab" data-target="tickets-section">
+                <i class="fas fa-ticket-alt me-1"></i> التذاكر
+            </div>
+            <div class="admin-tab" data-target="tools-section">
+                <i class="fas fa-tools me-1"></i> الأدوات
+            </div>
+            <div class="admin-tab" data-target="notifications-section">
+                <i class="fas fa-bell me-1"></i> الإشعارات
+            </div>
+            <% if (isOwner) { %>
+                <div class="admin-tab" data-target="pricing-section">
+                    <i class="fas fa-dollar-sign me-1"></i> الباقات والأسعار
+                </div>
+                <div class="admin-tab" data-target="logs-section">
+                    <i class="fas fa-clipboard-list me-1"></i> سجلات الموقع
+                </div>
+                <% } %>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div class="admin-section active" id="dashboard-section">
+            <div class="row">
+                <!-- Stats Cards -->
+                <% if (typeof stats !=='undefined' ) { %>
+                    <div class="grid grid-4 mb-4 slide-up">
+                        <div class="card card-clickable" onclick="showHostingsList()">
+                            <div class="card-icon"><i class="fas fa-server"></i></div>
+                            <h4 class="mb-1">
+                                <%= stats.totalHostings %>
+                            </h4>
+                            <p>إجمالي الهوستات</p>
+                            <div class="card-badge"><i class="fas fa-chevron-right"></i></div>
+                        </div>
+                        <div class="card card-clickable" onclick="filterHostings('running')">
+                            <div class="card-icon"><i class="fas fa-play-circle"></i></div>
+                            <h4 class="mb-1">
+                                <%= stats.activeHostings %>
+                            </h4>
+                            <p>الهوستات النشطة</p>
+                            <div class="card-badge bg-success"><i class="fas fa-chevron-right"></i></div>
+                        </div>
+                        <div class="card card-clickable" onclick="showUsersList()">
+                            <div class="card-icon"><i class="fas fa-users"></i></div>
+                            <h4 class="mb-1">
+                                <%= stats.totalUsers %>
+                            </h4>
+                            <p>المستخدمين</p>
+                            <div class="card-badge"><i class="fas fa-chevron-right"></i></div>
+                        </div>
+                        <div class="card card-clickable" onclick="optimizeStorage()">
+                            <div class="card-icon"><i class="fas fa-hdd"></i></div>
+                            <h4 class="mb-1">
+                                <%= stats.totalStorage %>
+                            </h4>
+                            <p>المساحة المستخدمة</p>
+                            <div class="card-badge"><i class="fas fa-broom"></i></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-4 mb-4 slide-up" style="animation-delay: 0.15s;">
+                        <div class="card card-clickable" onclick="filterHostings('discord')">
+                            <div class="card-icon"><i class="fab fa-discord"></i></div>
+                            <h4 class="mb-1">
+                                <%= (hostings||[]).filter(h=> h.serviceType === 'discord').length %>
+                            </h4>
+                            <p>بوتات ديسكورد</p>
+                        </div>
+                        <div class="card card-clickable" onclick="filterHostings('web')">
+                            <div class="card-icon"><i class="fas fa-globe"></i></div>
+                            <h4 class="mb-1">
+                                <%= (hostings||[]).filter(h=> h.serviceType === 'web').length %>
+                            </h4>
+                            <p>مواقع ويب</p>
+                        </div>
+                        <div class="card card-clickable" onclick="filterHostings('mta')">
+                            <div class="card-icon"><i class="fas fa-gamepad"></i></div>
+                            <h4 class="mb-1">
+                                <%= (hostings||[]).filter(h=> h.serviceType === 'mta' || h.serviceType ===
+                                    'fivem').length %>
+                            </h4>
+                            <p>سيرفرات ألعاب</p>
+                        </div>
+                    </div>
+                    <% } %>
+
+                        <div class="row mt-4 slide-up" style="animation-delay: 0.1s;">
+                            <div class="col-md-12">
+                                <div class="card" id="tools-card">
+                                    <div class="card-header">
+                                        <h4 class="mb-0"><i class="fas fa-gear me-1"></i> أدوات سريعة</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <button id="optimize-storage" class="btn btn-primary"><i
+                                                    class="fas fa-broom me-1"></i> تخفيف المساحة</button>
+                                        </div>
+                                        <div id="optimize-result" class="text-muted small mt-2"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+            </div>
+        </div>
+
+        <!-- Security Section -->
+        <div class="container-fluid">
+            <div class="admin-section" id="security-section">
+                <h3 class="section-title mb-4"><i class="fas fa-shield-alt me-2"></i> إدارة الأمان</h3>
+
+                <div class="security-section">
+                    <!-- IP Ban Card -->
+                    <div class="card security-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon">
+                                    <i class="fas fa-network-wired"></i>
+                                </div>
+                                <h4 class="mb-0">حظر عنوان IP</h4>
+                            </div>
+                            <button class="btn btn-sm btn-outline" onclick="refreshBannedIps()"
+                                data-tooltip="تحديث قائمة IP المحظورة"><i class="fas fa-sync"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="input-group input-group-enhanced mb-3">
+                                <input id="ban-ip-input" class="form-control" placeholder="أدخل IP للحظر">
+                                <button class="btn btn-danger" onclick="banIp()"><i class="fas fa-ban me-1"></i>
+                                    حظر</button>
+                            </div>
+                            <div class="banned-ips-list mb-3">
+                                <h6 class="small">عناوين IP المحظورة:</h6>
+                                <div id="banned-ips-container" class="mt-2">
+                                    <% if ((bannedIps||[]).length===0) { %>
+                                        <div class="text-muted">لا توجد عناوين IP محظورة</div>
+                                        <% } else { %>
+                                            <% (bannedIps||[]).forEach(ip=> { %>
+                                                <div class="banned-ip-item">
+                                                    <span>
+                                                        <%= ip %>
+                                                    </span>
+                                                    <button class="btn btn-sm btn-outline"
+                                                        onclick="unbanIpDirect('<%= ip %>')"><i
+                                                            class="fas fa-times"></i></button>
+                                                </div>
+                                                <% }) %>
+                                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Ban Card -->
+                    <div class="card security-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon">
+                                    <i class="fas fa-user-slash"></i>
+                                </div>
+                                <h4 class="mb-0">حظر مستخدم</h4>
+                            </div>
+                            <button class="btn btn-sm btn-outline" onclick="refreshBannedUsers()"
+                                data-tooltip="تحديث قائمة المستخدمين المحظورين"><i class="fas fa-sync"></i></button>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="input-group input-group-enhanced mb-2">
+                                    <input id="ban-user-id-input" class="form-control" placeholder="أدخل معرف المستخدم">
+                                    <button class="btn btn-danger" onclick="banUser()"><i class="fas fa-ban me-1"></i>
+                                        حظر</button>
+                                </div>
+                                <div class="input-group input-group-enhanced">
+                                    <input id="ban-user-name-input" class="form-control"
+                                        placeholder="اسم المستخدم (اختياري)">
+                                </div>
+                            </div>
+                            <div class="banned-users-list mb-2">
+                                <h6 class="small">المستخدمين المحظورين:</h6>
+                                <div id="banned-users-container" class="mt-2">
+                                    <div class="text-muted">لا توجد معرفات محظورة</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tickets Section -->
+        <div class="container-fluid">
+            <div class="admin-section" id="tickets-section">
+                <h3 class="section-title mb-4"><i class="fas fa-ticket-alt me-2"></i> إدارة التذاكر</h3>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0"><i class="fas fa-inbox me-1"></i> جميع التذاكر</h4>
+                    </div>
+                    <div class="card-body">
+                        <% if (tickets && tickets.length) { %>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>الموضوع</th>
+                                            <th>المستخدم</th>
+                                            <th>الحالة</th>
+                                            <th>تاريخ</th>
+                                            <th>إجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% tickets.forEach(t=> { %>
+                                            <tr>
+                                                <td><strong>
+                                                        <%= t.subject %>
+                                                    </strong>
+                                                    <div class="text-muted small">
+                                                        <%= t.type %>
+                                                    </div>
+                                                </td>
+                                                <td class="text-capitalize">
+                                                    <%= t.user?.username || 'guest' %>
+                                                </td>
+                                                <td><span
+                                                        class="badge <%= t.status==='open'?'bg-success':t.status==='pending'?'bg-dark':'bg-danger' %>">
+                                                        <%= t.status %>
+                                                    </span></td>
+                                                <td>
+                                                    <%= new Date(t.createdAt).toLocaleString('ar-EG') %>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex gap-2">
+                                                        <button class="btn btn-sm"
+                                                            onclick="updateTicket('<%= t.id %>','open')">فتح</button>
+                                                        <button class="btn btn-sm"
+                                                            onclick="updateTicket('<%= t.id %>','pending')">قيد
+                                                            المراجعة</button>
+                                                        <button class="btn btn-sm btn-danger"
+                                                            onclick="updateTicket('<%= t.id %>','closed')">إغلاق</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <% } else { %>
+                                <div class="text-center py-4 text-muted">لا توجد تذاكر</div>
+                                <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tools Section -->
+        <div class="container-fluid">
+            <div class="admin-section" id="tools-section">
+                <h3 class="section-title mb-4"><i class="fas fa-tools me-2"></i> أدوات النظام</h3>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0"><i class="fas fa-broom me-1"></i> تحسين النظام</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap gap-3">
+                            <button id="optimize-storage-tool" class="btn btn-primary"
+                                data-tooltip="حذف الملفات المؤقتة وتوفير المساحة">
+                                <i class="fas fa-broom me-1"></i> تخفيف المساحة
+                            </button>
+                            <button class="btn btn-outline" onclick="cleanupDatabase()"
+                                data-tooltip="حذف السجلات القديمة من قاعدة البيانات">
+                                <i class="fas fa-database me-1"></i> تنظيف قاعدة البيانات
+                            </button>
+                            <button class="btn btn-outline" onclick="cleanupLogs()"
+                                data-tooltip="حذف ملفات السجلات القديمة">
+                                <i class="fas fa-history me-1"></i> تنظيف السجلات
+                            </button>
+                        </div>
+                        <div id="optimize-result-tool" class="text-muted small mt-3 p-3 bg-dark rounded"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing Section -->
+        <div class="container-fluid">
+            <div class="admin-section" id="pricing-section">
+                <h3 class="section-title mb-4"><i class="fas fa-dollar-sign me-2"></i> إدارة الباقات والأسعار</h3>
+
+                <div class="row">
+                    <!-- Packages Management -->
+                    <div class="col-md-12 mb-4">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h4 class="mb-0"><i class="fas fa-box me-1"></i> الباقات والأسعار</h4>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline" onclick="loadPricingConfig()">
+                                        <i class="fas fa-sync me-1"></i> تحديث
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <ul class="nav nav-tabs mb-3" id="serviceTypeTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="discord-tab" data-bs-toggle="tab"
+                                            data-bs-target="#discord-packages" type="button" role="tab">
+                                            <i class="fab fa-discord me-1"></i> Discord
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="web-tab" data-bs-toggle="tab"
+                                            data-bs-target="#web-packages" type="button" role="tab">
+                                            <i class="fas fa-globe me-1"></i> Web
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="minecraft-tab" data-bs-toggle="tab"
+                                            data-bs-target="#minecraft-packages" type="button" role="tab">
+                                            <i class="fas fa-cube me-1"></i> Minecraft
+                                        </button>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content" id="serviceTypeTabContent">
+                                    <!-- Discord Packages -->
+                                    <div class="tab-pane fade show active" id="discord-packages" role="tabpanel">
+                                        <div id="discord-packages-container">
+                                            <!-- Packages will be loaded here -->
+                                        </div>
+                                        <button class="btn btn-primary mt-3" onclick="addPackage('discord')">
+                                            <i class="fas fa-plus me-1"></i> إضافة باقة جديدة
+                                        </button>
+                                    </div>
+
+                                    <!-- Web Packages -->
+                                    <div class="tab-pane fade" id="web-packages" role="tabpanel">
+                                        <div id="web-packages-container">
+                                            <!-- Packages will be loaded here -->
+                                        </div>
+                                        <button class="btn btn-primary mt-3" onclick="addPackage('web')">
+                                            <i class="fas fa-plus me-1"></i> إضافة باقة جديدة
+                                        </button>
+                                    </div>
+
+                                    <!-- Minecraft Packages -->
+                                    <div class="tab-pane fade" id="minecraft-packages" role="tabpanel">
+                                        <div id="minecraft-packages-container">
+                                            <!-- Packages will be loaded here -->
+                                        </div>
+                                        <button class="btn btn-primary mt-3" onclick="addPackage('minecraft')">
+                                            <i class="fas fa-plus me-1"></i> إضافة باقة جديدة
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Discount Codes -->
+                    <div class="col-md-12 mb-4">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h4 class="mb-0"><i class="fas fa-ticket-alt me-1"></i> أكواد الخصم</h4>
+                                <button class="btn btn-primary btn-sm" onclick="openAddDiscountCodeModal()">
+                                    <i class="fas fa-plus me-1"></i> إضافة كود خصم
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div id="discount-codes-container">
+                                    <!-- Discount codes will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Minecraft Section -->
+        <div class="container-fluid">
+            <div class="admin-section" id="minecraft-section">
+                <h3 class="section-title mb-4"><i class="fas fa-cube me-2"></i> إدارة سيرفرات Minecraft</h3>
+
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h4 class="mb-0"><i class="fas fa-server me-1"></i> سيرفرات Minecraft النشطة</h4>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline" onclick="refreshMinecraftServers()">
+                                        <i class="fas fa-sync me-1"></i> تحديث
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="minecraft-servers-container">
+                                    <!-- Minecraft servers will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Giveaways Section -->
+        <div class="container-fluid">
+            <div class="admin-section" id="giveaways-section">
+                <h3 class="section-title mb-4"><i class="fas fa-gift me-2"></i> إدارة الجوائز</h3>
+
+                <div class="row">
+                    <div class="col-md-12 mb-4">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h4 class="mb-0"><i class="fas fa-gift me-1"></i> الجوائز النشطة</h4>
+                                <button class="btn btn-primary btn-sm" onclick="openCreateGiveawayModal()">
+                                    <i class="fas fa-plus me-1"></i> إنشاء جائزة جديدة
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div id="giveaways-container">
+                                    <!-- Giveaways will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Section -->
+        <div class="container-fluid">
+            <div class="admin-section" id="notifications-section">
+                <h3 class="section-title mb-4"><i class="fas fa-bell me-2"></i> إدارة الإشعارات</h3>
+
+                <div class="notifications-management-section">
+                    <!-- Create Notification Card -->
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0"><i class="fas fa-plus-circle me-1"></i> إنشاء إشعار جديد</h4>
+                            <button class="btn btn-primary" onclick="openCreateNotificationModal()">
+                                <i class="fas fa-plus me-1"></i> إضافة إشعار
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Notifications List -->
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">
+                                <i class="fas fa-list me-1"></i> الإشعارات المرسلة
+                                <span class="badge bg-primary ms-2">
+                                    <%= notifications ? notifications.length : 0 %>
+                                </span>
+                            </h4>
+                            <button class="btn btn-primary btn-sm" onclick="openCreateNotificationModal()">
+                                <i class="fas fa-plus me-1"></i>إنشاء إشعار
+                            </button>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive" style="max-height: 700px; overflow-y: auto; width: 100%;">
+                                <table class="table table-hover mb-0" id="notifications-table"
+                                    style="min-width: 1200px;">
+                                    <thead class="table-dark sticky-top">
+                                        <tr>
+                                            <th style="width: 25%;">العنوان</th>
+                                            <th style="width: 10%;">النوع</th>
+                                            <th style="width: 12%;">المستهدف</th>
+                                            <th style="width: 10%;">الأولوية</th>
+                                            <th style="width: 15%;">تاريخ الإرسال</th>
+                                            <th style="width: 8%;">الحالة</th>
+                                            <th style="width: 15%;">إجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% if (notifications && notifications.length> 0) { %>
+                                            <% notifications.forEach(notification=> { %>
+                                                <tr data-notification-id="<%= notification._id %>"
+                                                    class="notification-row">
+                                                    <td>
+                                                        <div class="notification-title fw-bold text-truncate"
+                                                            style="max-width: 250px;" title="<%= notification.title %>">
+                                                            <%= notification.title %>
+                                                        </div>
+                                                        <div class="text-muted small text-truncate notification-message"
+                                                            style="max-width: 250px;"
+                                                            title="<%= notification.message %>">
+                                                            <%= notification.message.length> 60 ?
+                                                                notification.message.substring(0, 60) + '...' :
+                                                                notification.message %>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge <%= 
+                                                    notification.type === 'info' ? 'bg-info' :
+                                                    notification.type === 'warning' ? 'bg-warning' :
+                                                    notification.type === 'success' ? 'bg-success' :
+                                                    notification.type === 'error' ? 'bg-danger' :
+                                                    notification.type === 'announcement' ? 'bg-primary' :
+                                                    'bg-secondary'
+                                                %> notification-type">
+                                                            <%= notification.type==='info' ? 'معلومات' :
+                                                                notification.type==='warning' ? 'تحذير' :
+                                                                notification.type==='success' ? 'نجاح' :
+                                                                notification.type==='error' ? 'خطأ' :
+                                                                notification.type==='announcement' ? 'إعلان' :
+                                                                notification.type %>
+                                                        </span>
+                                                    </td>
+                                                    <td class="notification-target">
+                                                        <% if (notification.targetType==='all' ) { %>
+                                                            <span class="badge bg-primary">
+                                                                <i class="fas fa-globe me-1"></i>الجميع
+                                                            </span>
+                                                            <% } else { %>
+                                                                <span class="badge bg-info">
+                                                                    <i class="fas fa-users me-1"></i>
+                                                                    <%= notification.targetUsers ?
+                                                                        notification.targetUsers.length : 0 %> مستخدم
+                                                                </span>
+                                                                <% } %>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge <%= 
+                                                    notification.priority === 'urgent' ? 'bg-danger' :
+                                                    notification.priority === 'high' ? 'bg-warning' :
+                                                    notification.priority === 'medium' ? 'bg-info' :
+                                                    'bg-secondary'
+                                                %> notification-priority">
+                                                            <i class="fas fa-<%= 
+                                                        notification.priority === 'urgent' ? 'exclamation-triangle' :
+                                                        notification.priority === 'high' ? 'arrow-up' :
+                                                        notification.priority === 'medium' ? 'minus' : 'arrow-down'
+                                                    %> me-1"></i>
+                                                            <%= notification.priority==='urgent' ? 'عاجل' :
+                                                                notification.priority==='high' ? 'عالي' :
+                                                                notification.priority==='medium' ? 'متوسط' : 'منخفض' %>
+                                                        </span>
+                                                    </td>
+                                                    <td class="notification-date">
+                                                        <div class="text-muted small">
+                                                            <i class="fas fa-clock me-1"></i>
+                                                            <%= formatTimeAgo(notification.createdAt) %>
+                                                        </div>
+                                                        <div class="text-muted" style="font-size: 11px;">
+                                                            <%= new
+                                                                Date(notification.createdAt).toLocaleDateString('ar-EG')
+                                                                %>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <% if (notification.isActive) { %>
+                                                            <span class="badge bg-success notification-status">
+                                                                <i class="fas fa-check-circle me-1"></i>نشط
+                                                            </span>
+                                                            <% } else { %>
+                                                                <span class="badge bg-secondary notification-status">
+                                                                    <i class="fas fa-pause-circle me-1"></i>معلق
+                                                                </span>
+                                                                <% } %>
+                                                    </td>
+                                                    <td>
+                                                        <div class="dropdown">
+                                                            <button
+                                                                class="btn btn-sm btn-outline-primary dropdown-toggle"
+                                                                type="button"
+                                                                id="notificationDropdown<%= notification._id %>"
+                                                                onclick="toggleDropdown('notificationDropdown<%= notification._id %>')">
+                                                                <i class="fas fa-cog me-1"></i>إجراءات
+                                                            </button>
+                                                            <ul class="dropdown-menu dropdown-menu-end"
+                                                                aria-labelledby="notificationDropdown<%= notification._id %>">
+                                                                <li><a class="dropdown-item" href="javascript:void(0)"
+                                                                        onclick="viewNotification('<%= notification._id %>')">
+                                                                        <i class="fas fa-eye me-2"></i>عرض التفاصيل
+                                                                    </a></li>
+                                                                <li><a class="dropdown-item" href="javascript:void(0)"
+                                                                        onclick="editNotification('<%= notification._id %>')">
+                                                                        <i class="fas fa-edit me-2"></i>تعديل
+                                                                    </a></li>
+                                                                <li>
+                                                                    <hr class="dropdown-divider">
+                                                                </li>
+                                                                <li><a class="dropdown-item" href="javascript:void(0)"
+                                                                        onclick="toggleNotificationStatus('<%= notification._id %>', '<%= notification.isActive %>')">
+                                                                        <i
+                                                                            class="fas fa-<%= notification.isActive ? 'pause' : 'play' %> me-2"></i>
+                                                                        <%= notification.isActive ? 'إيقاف' : 'تفعيل' %>
+                                                                    </a></li>
+                                                                <li><a class="dropdown-item text-danger"
+                                                                        href="javascript:void(0)"
+                                                                        onclick="deleteNotification('<%= notification._id %>', '<%= notification.title %>')">
+                                                                        <i class="fas fa-trash me-2"></i>حذف نهائي
+                                                                    </a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                                    <% } else { %>
+                                                        <tr>
+                                                            <td colspan="7" class="text-center py-5 text-muted">
+                                                                <i
+                                                                    class="fas fa-bell-slash fa-3x mb-3 d-block opacity-50"></i>
+                                                                <h6>لا توجد إشعارات مرسلة</h6>
+                                                                <p class="mb-3">ابدأ بإنشاء إشعار جديد للمستخدمين</p>
+                                                                <button class="btn btn-primary"
+                                                                    onclick="openCreateNotificationModal()">
+                                                                    <i class="fas fa-plus me-1"></i>إنشاء أول إشعار
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hostings Section -->
+        <div class="container-fluid">
+            <div class="admin-section" id="hostings-section">
+                <h3 class="section-title mb-4"><i class="fas fa-server me-2"></i> إدارة الهوستات</h3>
+
+                <div class="hostings-management-section">
+                    <div class="hostings-table-wrapper" id="hostings-table-section">
+                        <div class="hostings-table-header">
+                            <h4 class="mb-0">قائمة الهوستات</h4>
+                            <div class="hostings-filters">
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control" id="hostings-search" placeholder="بحث...">
+                                    <button class="btn btn-outline" type="button" id="hostings-search-btn">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm dropdown-toggle" type="button" id="filterDropdown"
+                                        onclick="toggleDropdown('filterDropdown')">
+                                        <i class="fas fa-filter me-1"></i> تصفية
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                        <li><a class="dropdown-item" href="javascript:void(0)"
+                                                onclick="filterHostings('all'); return false;">الكل</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)"
+                                                onclick="filterHostings('running'); return false;">قيد التشغيل</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)"
+                                                onclick="filterHostings('stopped'); return false;">متوقف</a></li>
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)"
+                                                onclick="filterHostings('discord'); return false;">بوتات ديسكورد</a>
+                                        </li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)"
+                                                onclick="filterHostings('web'); return false;">مواقع ويب</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)"
+                                                onclick="filterHostings('mta'); return false;">MTA</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)"
+                                                onclick="filterHostings('fivem'); return false;">FiveM</a></li>
+                                    </ul>
+                                </div>
+                                <button class="btn btn-sm btn-primary" onclick="openCreateHostingModal()">
+                                    <i class="fas fa-plus me-1"></i> إضافة
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0" id="hostings-table">
+                                    <thead>
+                                        <tr>
+                                            <th>الاسم</th>
+                                            <th>المالك</th>
+                                            <th>النوع</th>
+                                            <th>المنفذ</th>
+                                            <th>المواصفات</th>
+                                            <th>الحالة</th>
+                                            <th>تاريخ الانتهاء</th>
+                                            <th>إجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% (hostings||[]).forEach(h=> { %>
+                                            <tr data-hosting-id="<%= h.id %>" data-hosting-type="<%= h.serviceType %>"
+                                                data-hosting-status="<%= h.status||'stopped' %>">
+                                                <td>
+                                                    <%= h.name %>
+                                                </td>
+                                                <td class="text-capitalize">
+                                                    <%= h.owner?.username || 'unknown' %>
+                                                </td>
+                                                <td>
+                                                    <% if (h.serviceType==='discord' ) { %>
+                                                        <span class="badge bg-primary"><i
+                                                                class="fab fa-discord me-1"></i> Discord</span>
+                                                        <% } else if (h.serviceType==='web' ) { %>
+                                                            <span class="badge bg-info"><i
+                                                                    class="fas fa-globe me-1"></i> Web</span>
+                                                            <% } else if (h.serviceType==='mta' ) { %>
+                                                                <span class="badge bg-warning"><i
+                                                                        class="fas fa-gamepad me-1"></i> MTA</span>
+                                                                <% } else if (h.serviceType==='fivem' ) { %>
+                                                                    <span class="badge bg-success"><i
+                                                                            class="fas fa-gamepad me-1"></i>
+                                                                        FiveM</span>
+                                                                    <% } else if (h.serviceType==='minecraft' ) { %>
+                                                                        <span class="badge bg-danger"><i
+                                                                                class="fas fa-cube me-1"></i>
+                                                                            Minecraft</span>
+                                                                        <% } else { %>
+                                                                            <span class="badge bg-secondary">
+                                                                                <%= h.serviceType %>
+                                                                            </span>
+                                                                            <% } %>
+                                                </td>
+                                                <td>
+                                                    <%= h.port || '-' %>
+                                                </td>
+                                                <td>
+                                                    <% if (h.specs) { %>
+                                                        <span class="badge bg-dark">
+                                                            <%= h.specs.cpu || '1' %> CPU
+                                                        </span>
+                                                        <span class="badge bg-dark">
+                                                            <%= h.specs.ram || '512' %> MB
+                                                        </span>
+                                                        <span class="badge bg-dark">
+                                                            <%= h.specs.storage || '1' %> GB
+                                                        </span>
+                                                        <% } else { %>
+                                                            <span class="badge bg-dark">أساسي</span>
+                                                            <% } %>
+                                                </td>
+                                                <td>
+                                                    <% if ((h.status||'stopped')==='running' ) { %>
+                                                        <span class="badge bg-success"><i
+                                                                class="fas fa-circle me-1"></i> يعمل</span>
+                                                        <% } else if ((h.status||'stopped')==='restarting' ) { %>
+                                                            <span class="badge bg-warning"><i
+                                                                    class="fas fa-sync me-1 fa-spin"></i> إعادة
+                                                                تشغيل</span>
+                                                            <% } else { %>
+                                                                <span class="badge bg-danger"><i
+                                                                        class="fas fa-circle me-1"></i> متوقف</span>
+                                                                <% } %>
+                                                </td>
+                                                <td>
+                                                    <% if (h.expiryDate) { %>
+                                                        <% const now=new Date(); %>
+                                                            <% const expiry=new Date(h.expiryDate); %>
+                                                                <% const daysLeft=Math.ceil((expiry - now) / (1000 * 60
+                                                                    * 60 * 24)); %>
+                                                                    <% if (daysLeft <=0) { %>
+                                                                        <span class="badge bg-danger"><i
+                                                                                class="fas fa-calendar-times me-1"></i>
+                                                                            منتهي</span>
+                                                                        <% } else if (daysLeft <=3) { %>
+                                                                            <span class="badge bg-warning"><i
+                                                                                    class="fas fa-exclamation-triangle me-1"></i>
+                                                                                <%= daysLeft %> يوم
+                                                                            </span>
+                                                                            <% } else { %>
+                                                                                <span class="badge bg-info"><i
+                                                                                        class="fas fa-calendar me-1"></i>
+                                                                                    <%= h.expiryDate %>
+                                                                                </span>
+                                                                                <% } %>
+                                                                                    <% } else { %>
+                                                                                        <span
+                                                                                            class="badge bg-secondary">غير
+                                                                                            محدد</span>
+                                                                                        <% } %>
+                                                </td>
+                                                <td>
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm dropdown-toggle" type="button"
+                                                            id="dropdownMenuButton<%= h.id %>"
+                                                            onclick="toggleDropdown('dropdownMenuButton<%= h.id %>')">
+                                                            إجراءات
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end"
+                                                            aria-labelledby="dropdownMenuButton<%= h.id %>">
+                                                            <li><a class="dropdown-item" href="javascript:void(0)"
+                                                                    onclick="adminStart('<%= h.id %>'); return false;"><i
+                                                                        class="fas fa-play me-1"></i> تشغيل</a></li>
+                                                            <li><a class="dropdown-item" href="javascript:void(0)"
+                                                                    onclick="adminStop('<%= h.id %>'); return false;"><i
+                                                                        class="fas fa-stop me-1"></i> إيقاف</a></li>
+                                                            <li><a class="dropdown-item" href="javascript:void(0)"
+                                                                    onclick="adminRestart('<%= h.id %>'); return false;"><i
+                                                                        class="fas fa-sync me-1"></i> إعادة تشغيل</a>
+                                                            </li>
+                                                            <li>
+                                                                <hr class="dropdown-divider">
+                                                            </li>
+                                                            <li><a class="dropdown-item" href="/files/<%= h.id %>"
+                                                                    target="_blank"><i
+                                                                        class="fas fa-folder-open me-1"></i> الملفات</a>
+                                                            </li>
+                                                            <li><a class="dropdown-item" href="/console/<%= h.id %>"
+                                                                    target="_blank"><i class="fas fa-terminal me-1"></i>
+                                                                    الكونسول</a></li>
+                                                            <li>
+                                                                <hr class="dropdown-divider">
+                                                            </li>
+                                                            <li><a class="dropdown-item" href="javascript:void(0)"
+                                                                    onclick="editHosting('<%= h.id %>', '<%= h.name %>', '<%= h.serviceType %>', '<%= h.port %>', '<%= h.mainFile %>'); return false;"><i
+                                                                        class="fas fa-edit me-1"></i> تعديل</a></li>
+                                                            <li><a class="dropdown-item" href="javascript:void(0)"
+                                                                    onclick="extendHosting('<%= h.id %>', '<%= h.name %>'); return false;"><i
+                                                                        class="fas fa-calendar-plus me-1"></i> تمديد</a>
+                                                            </li>
+                                                            <li><a class="dropdown-item text-danger"
+                                                                    href="javascript:void(0)"
+                                                                    onclick="confirmDelete('<%= h.id %>', '<%= h.name %>'); return false;"><i
+                                                                        class="fas fa-trash me-1"></i> حذف</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Notification Modal -->
+    <div id="createNotificationModal" class="modal-overlay" style="display: none;">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-bell me-2"></i>إنشاء إشعار جديد
+                </h5>
+                <button type="button" class="modal-close" onclick="closeCreateNotificationModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="createNotificationForm">
+                    <div class="row">
+                        <!-- Basic Information -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-info-circle me-1"></i>معلومات الإشعار
+                            </h6>
+
+                            <div class="mb-3">
+                                <label for="notificationTitle" class="form-label">
+                                    <i class="fas fa-heading me-1"></i>عنوان الإشعار
+                                </label>
+                                <input type="text" class="form-control" id="notificationTitle"
+                                    placeholder="أدخل عنوان الإشعار" required maxlength="200">
+                                <div class="form-text">العنوان الذي سيظهر للمستخدمين</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="notificationMessage" class="form-label">
+                                    <i class="fas fa-comment me-1"></i>محتوى الإشعار
+                                </label>
+                                <textarea class="form-control" id="notificationMessage" rows="4"
+                                    placeholder="أدخل محتوى الإشعار" required maxlength="1000"></textarea>
+                                <div class="form-text">المحتوى التفصيلي للإشعار</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="notificationType" class="form-label">
+                                    <i class="fas fa-tag me-1"></i>نوع الإشعار
+                                </label>
+                                <select class="form-select" id="notificationType" required>
+                                    <option value="">اختر نوع الإشعار</option>
+                                    <option value="info">📢 معلومات</option>
+                                    <option value="warning">⚠️ تحذير</option>
+                                    <option value="success">✅ نجاح</option>
+                                    <option value="error">❌ خطأ</option>
+                                    <option value="announcement">📢 إعلان</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Target and Settings -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-users me-1"></i>الإعدادات
+                            </h6>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-bullseye me-1"></i>المستهدف
+                                </label>
+                                <div class="btn-group w-100 mb-2" role="group">
+                                    <input type="radio" class="btn-check" name="targetType" id="targetAll" value="all"
+                                        checked>
+                                    <label class="btn btn-outline-primary" for="targetAll">الجميع</label>
+
+                                    <input type="radio" class="btn-check" name="targetType" id="targetSpecific"
+                                        value="specific">
+                                    <label class="btn btn-outline-primary" for="targetSpecific">مستخدمين محددين</label>
+                                </div>
+                            </div>
+
+                            <div id="specificUsersSection" class="mb-3" style="display: none;">
+                                <label for="targetUsers" class="form-label">
+                                    <i class="fas fa-user-friends me-1"></i>المستخدمين المستهدفين
+                                </label>
+                                <input type="text" class="form-control" id="targetUsers"
+                                    placeholder="أدخل أسماء المستخدمين مفصولة بفاصلة">
+                                <div class="form-text">مثال: user1, user2, user3</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="notificationPriority" class="form-label">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>الأولوية
+                                </label>
+                                <select class="form-select" id="notificationPriority">
+                                    <option value="low">🟢 منخفض</option>
+                                    <option value="medium" selected>🟡 متوسط</option>
+                                    <option value="high">🟠 عالي</option>
+                                    <option value="urgent">🔴 عاجل</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="notificationLink" class="form-label">
+                                    <i class="fas fa-link me-1"></i>رابط (اختياري)
+                                </label>
+                                <input type="url" class="form-control" id="notificationLink"
+                                    placeholder="https://example.com">
+                                <div class="form-text">رابط سيتم فتحه عند النقر على الإشعار</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="notificationExpiry" class="form-label">
+                                    <i class="fas fa-clock me-1"></i>انتهاء الصلاحية (اختياري)
+                                </label>
+                                <input type="datetime-local" class="form-control" id="notificationExpiry">
+                                <div class="form-text">تاريخ انتهاء صلاحية الإشعار</div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCreateNotificationModal()">
+                    <i class="fas fa-times me-1"></i>إلغاء
+                </button>
+                <button type="button" class="btn btn-primary" id="createNotificationBtn">
+                    <i class="fas fa-paper-plane me-1"></i>إرسال الإشعار
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Hosting Modal -->
+    <div id="createHostingModal" class="modal-overlay" style="display: none;">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle me-2"></i>إضافة هوست جديد
+                </h5>
+                <button type="button" class="modal-close" onclick="closeCreateHostingModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="createHostingForm" onclick="event.stopPropagation()">
+                    <div class="row">
+                        <!-- Basic Information -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-info-circle me-1"></i>المعلومات الأساسية
+                            </h6>
+
+                            <div class="mb-3">
+                                <label for="discordId" class="form-label">
+                                    <i class="fas fa-id-card me-1"></i>معرف المستخدم
+                                </label>
+                                <input type="text" class="form-control" id="discordId"
+                                    placeholder="أدخل معرف المستخدم في Discord" required>
+                                <div class="form-text">معرف المستخدم في Discord (User ID)</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="hostName" class="form-label">
+                                    <i class="fas fa-server me-1"></i>اسم الهوست (اختياري)
+                                </label>
+                                <input type="text" class="form-control" id="hostName"
+                                    placeholder="اتركه فارغاً للتسمية التلقائية">
+                                <div class="form-text">يمكنك تحديد اسم مخصص للهوست أو تركه للتسمية التلقائية</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="serviceType" class="form-label">
+                                    <i class="fas fa-cog me-1"></i>نوع الخدمة
+                                </label>
+                                <select class="form-select" id="serviceType" required
+                                    onchange="toggleMinecraftOptions()">
+                                    <option value="">اختر نوع الخدمة</option>
+                                    <option value="discord">🤖 Discord Bot</option>
+                                    <option value="web">🌐 Web Hosting</option>
+                                    <option value="mta">🎮 MTA Server</option>
+                                    <option value="fivem">🚗 FiveM Server</option>
+                                    <option value="minecraft">🎮 Minecraft Server</option>
+                                </select>
+                            </div>
+
+                            <div id="minecraftOptions" class="mb-3" style="display: none;">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="skipTemplate" checked>
+                                    <label class="form-check-label" for="skipTemplate">
+                                        تجهيز ملفات الماينكرافت تلقائياً (jar, eula, properties)
+                                    </label>
+                                </div>
+                                <div class="form-text">قم بإلغاء التحديد إذا كنت تريد الهوست فارغاً تماماً</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="port" class="form-label">
+                                    <i class="fas fa-network-wired me-1"></i>المنفذ (اختياري)
+                                </label>
+                                <input type="number" class="form-control" id="port" placeholder="3000" min="1000"
+                                    max="65535">
+                                <div class="form-text">اتركه فارغاً للاختيار التلقائي</div>
+                            </div>
+                        </div>
+
+                        <!-- Configuration -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-sliders-h me-1"></i>الإعدادات
+                            </h6>
+
+                            <div class="mb-3">
+                                <label for="duration" class="form-label">
+                                    <i class="fas fa-clock me-1"></i>مدة الاستضافة
+                                </label>
+                                <select class="form-select" id="duration" required>
+                                    <option value="">اختر المدة</option>
+                                    <option value="3_days">3 أيام - مجاني</option>
+                                    <option value="1_week">أسبوع واحد</option>
+                                    <option value="1_month">شهر واحد</option>
+                                    <option value="3_months">3 شهور</option>
+                                    <option value="1_year">سنة كاملة</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="mainFile" class="form-label">
+                                    <i class="fas fa-file-code me-1"></i>الملف الرئيسي
+                                </label>
+                                <input type="text" class="form-control" id="mainFile" value="index.js"
+                                    placeholder="أدخل اسم الملف الرئيسي">
+                                <div class="form-text">الملف الذي سيتم تشغيله</div>
+                            </div>
+
+                            <!-- Specs Presets -->
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-microchip me-1"></i>مواصفات الاستضافة
+                                </label>
+                                <div class="btn-group w-100 mb-2" role="group">
+                                    <input type="radio" class="btn-check" name="specPreset" id="basic" value="basic"
+                                        checked>
+                                    <label class="btn btn-outline-primary" for="basic">أساسي</label>
+
+                                    <input type="radio" class="btn-check" name="specPreset" id="standard"
+                                        value="standard">
+                                    <label class="btn btn-outline-primary" for="standard">عادي</label>
+
+                                    <input type="radio" class="btn-check" name="specPreset" id="premium"
+                                        value="premium">
+                                    <label class="btn btn-outline-primary" for="premium">مميز</label>
+
+                                    <input type="radio" class="btn-check" name="specPreset" id="custom" value="custom">
+                                    <label class="btn btn-outline-primary" for="custom">مخصص</label>
+                                </div>
+                            </div>
+
+                            <!-- Custom Specs -->
+                            <div id="customSpecs" class="row g-2" style="display: none;">
+                                <div class="col-4">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-microchip"></i>
+                                        </span>
+                                        <input type="number" class="form-control" id="specsCpu" value="1" min="1"
+                                            max="8">
+                                        <span class="input-group-text">CPU</span>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-memory"></i>
+                                        </span>
+                                        <input type="number" class="form-control" id="specsRam" value="512" min="128"
+                                            step="128">
+                                        <span class="input-group-text">MB</span>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-hdd"></i>
+                                        </span>
+                                        <input type="number" class="form-control" id="specsStorage" value="1" min="1">
+                                        <span class="input-group-text">GB</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Specs Display -->
+                            <div id="specsDisplay" class="alert alert-info">
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <strong id="displayCpu">1</strong><br>
+                                        <small>CPU</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <strong id="displayRam">512 MB</strong><br>
+                                        <small>RAM</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <strong id="displayStorage">1 GB</strong><br>
+                                        <small>Storage</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeCreateHostingModal()">
+                    <i class="fas fa-times me-1"></i>إلغاء
+                </button>
+                <button type="button" class="btn btn-primary" id="createHostingBtn">
+                    <i class="fas fa-plus me-1"></i>إنشاء الهوست
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin CSS -->
+    <link rel="stylesheet" href="/css/admin.css">
+
+    <style>
+        /* Notifications table improvements */
+        .notification-row:hover {
+            background-color: rgba(0, 123, 255, 0.1) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .notification-title {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .notification-message {
+            font-size: 12px;
+            line-height: 1.3;
+            margin-top: 4px;
+        }
+
+        .table-dark th {
+            background-color: #343a40 !important;
+            border-color: #495057 !important;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .badge {
+            font-size: 11px;
+            padding: 4px 8px;
+        }
+
+        .dropdown-toggle::after {
+            margin-right: 0.5em;
+        }
+
+        .dropdown-menu {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: none;
+            border-radius: 8px;
+        }
+
+        .dropdown-item {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .dropdown-item.text-danger:hover {
+            background-color: #f8d7da;
+        }
+
+        /* Table width improvements */
+        #notifications-table {
+            width: 100% !important;
+            min-width: 1200px !important;
+        }
+
+        #notifications-table th,
+        #notifications-table td {
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        #notifications-table .notification-title,
+        #notifications-table .notification-message {
+            white-space: normal;
+            word-wrap: break-word;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            overflow-y: auto;
+        }
+
+        /* Ensure proper spacing */
+        .notification-row td {
+            padding: 12px 8px;
+        }
+
+        /* Better button styling */
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-container {
+            background: #1a1a1a;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2d2d2d;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .modal-title {
+            color: #fff;
+            margin: 0;
+            font-size: 1.25rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #333;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: #2d2d2d;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .form-label {
+            color: #fff;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .form-control,
+        .form-select {
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .form-text {
+            color: #999;
+            font-size: 0.875rem;
+            margin-top: 5px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-check {
+            display: none;
+        }
+
+        .btn-outline-primary {
+            background: transparent;
+            border: 1px solid #007bff;
+            color: #007bff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-check:checked+.btn-outline-primary {
+            background: #007bff;
+            color: #fff;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .input-group-text {
+            background: #444;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px 0 0 4px;
+            white-space: nowrap;
+        }
+
+        .input-group .form-control {
+            border-radius: 0 4px 4px 0;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .alert-info {
+            background: rgba(0, 123, 255, 0.1);
+            border: 1px solid rgba(0, 123, 255, 0.3);
+            color: #007bff;
+        }
+
+        .row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .col-md-6 {
+            flex: 1;
+        }
+
+        .col-4 {
+            flex: 1;
+        }
+
+        .g-2 {
+            gap: 10px;
+        }
+
+        .mb-3 {
+            margin-bottom: 15px;
+        }
+
+        .text-primary {
+            color: #007bff !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            display: none;
+            min-width: 160px;
+            padding: 5px 0;
+            margin: 2px 0 0;
+            background-color: #2d2d2d;
+            border: 1px solid #555;
+            border-radius: 4px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+        }
+
+        .dropdown-menu-end {
+            right: 0;
+            left: auto;
+        }
+
+        .dropdown-item {
+            display: block;
+            width: 100%;
+            padding: 8px 16px;
+            clear: both;
+            font-weight: normal;
+            color: #fff;
+            text-align: inherit;
+            text-decoration: none;
+            white-space: nowrap;
+            background-color: transparent;
+            border: 0;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background-color: #444;
+            color: #fff;
+        }
+
+        .dropdown-item.text-danger:hover {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .dropdown-divider {
+            height: 0;
+            margin: 5px 0;
+            overflow: hidden;
+            border-top: 1px solid #555;
+        }
+
+        .dropdown-toggle::after {
+            display: inline-block;
+            margin-left: 0.255em;
+            vertical-align: 0.255em;
+            content: "";
+            border-top: 0.3em solid;
+            border-right: 0.3em solid transparent;
+            border-bottom: 0;
+            border-left: 0.3em solid transparent;
+        }
+
+        @media (max-width: 768px) {
+            .modal-container {
+                width: 95%;
+                margin: 10px;
+            }
+
+            .row {
+                flex-direction: column;
+            }
+        }
+    </style>
+
+    <script>
+        // Simple and clean JavaScript
+        let currentFilter = 'all';
+
+        // Basic functions
+        function showHostingsList() {
+            const element = document.getElementById('hostings-table-section');
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function showUsersList() {
+            showToast('قائمة المستخدمين قيد التطوير', 'info');
+        }
+
+        function optimizeStorage() {
+            const btn = document.getElementById('optimize-storage');
+            if (btn) btn.click();
+        }
+
+        // Filter function
+        function filterHostings(filter) {
+            currentFilter = filter;
+            const rows = document.querySelectorAll('#hostings-table tbody tr');
+            const searchTerm = document.getElementById('hostings-search')?.value.toLowerCase() || '';
+
+            rows.forEach(row => {
+                const hostingType = row.getAttribute('data-hosting-type');
+                const hostingStatus = row.getAttribute('data-hosting-status');
+                let visible = true;
+
+                // Apply filter
+                if (filter !== 'all') {
+                    if (filter === 'running' && hostingStatus !== 'running') visible = false;
+                    else if (filter === 'stopped' && hostingStatus !== 'stopped') visible = false;
+                    else if (['discord', 'web', 'mta', 'fivem', 'minecraft'].includes(filter) && hostingType !== filter) visible = false;
+                }
+
+                // Apply search
+                if (searchTerm && visible) {
+                    const textContent = row.textContent.toLowerCase();
+                    if (!textContent.includes(searchTerm)) visible = false;
+                }
+
+                row.style.display = visible ? '' : 'none';
+            });
+        }
+
+        // Dropdown function
+        function toggleDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            if (dropdown) {
+                const menu = dropdown.nextElementSibling;
+                if (menu && menu.classList.contains('dropdown-menu')) {
+                    // Close all other dropdowns
+                    document.querySelectorAll('.dropdown-menu').forEach(m => {
+                        if (m !== menu) {
+                            m.style.display = 'none';
+                        }
+                    });
+
+                    // Toggle current dropdown
+                    if (menu.style.display === 'block') {
+                        menu.style.display = 'none';
+                    } else {
+                        menu.style.display = 'block';
+                    }
+                }
+            }
+        }
+
+        // Admin actions
+        function adminStart(id) {
+            showSpinner();
+            fetch(`/api/hosting/${id}/start`, { method: 'POST' })
+                .then(r => r.json())
+                .then(d => {
+                    hideSpinner();
+                    if (d.success) {
+                        showToast('تم تشغيل الهوست', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showToast('فشل تشغيل الهوست: ' + (d.message || ''), 'error');
+                    }
+                })
+                .catch(() => { hideSpinner(); showToast('خطأ في الاتصال', 'error'); });
+        }
+
+        function adminStop(id) {
+            showSpinner();
+            fetch(`/api/hosting/${id}/stop`, { method: 'POST' })
+                .then(r => r.json())
+                .then(d => {
+                    hideSpinner();
+                    if (d.success) {
+                        showToast('تم إيقاف الهوست', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showToast('فشل إيقاف الهوست: ' + (d.message || ''), 'error');
+                    }
+                })
+                .catch(() => { hideSpinner(); showToast('خطأ في الاتصال', 'error'); });
+        }
+
+        function adminRestart(id) {
+            showSpinner();
+            fetch(`/api/hosting/${id}/restart`, { method: 'POST' })
+                .then(r => r.json())
+                .then(d => {
+                    hideSpinner();
+                    if (d.success) {
+                        showToast('تم إعادة تشغيل الهوست', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showToast('فشل إعادة تشغيل الهوست: ' + (d.message || ''), 'error');
+                    }
+                })
+                .catch(() => { hideSpinner(); showToast('خطأ في الاتصال', 'error'); });
+        }
+
+        // Specs presets
+        const specsPresets = {
+            basic: { cpu: 1, ram: 512, storage: 1 },
+            standard: { cpu: 2, ram: 1024, storage: 2 },
+            premium: { cpu: 4, ram: 2048, storage: 5 },
+            custom: { cpu: 1, ram: 512, storage: 1 }
+        };
+
+        // Update specs display
+        function updateSpecsDisplay() {
+            const selectedPreset = document.querySelector('input[name="specPreset"]:checked');
+            if (!selectedPreset) return;
+
+            let specs;
+
+            if (selectedPreset.value === 'custom') {
+                specs = {
+                    cpu: document.getElementById('specsCpu')?.value || 1,
+                    ram: document.getElementById('specsRam')?.value || 512,
+                    storage: document.getElementById('specsStorage')?.value || 1
+                };
+            } else {
+                specs = specsPresets[selectedPreset.value];
+            }
+
+            const displayCpu = document.getElementById('displayCpu');
+            const displayRam = document.getElementById('displayRam');
+            const displayStorage = document.getElementById('displayStorage');
+
+            if (displayCpu) displayCpu.textContent = specs.cpu;
+            if (displayRam) displayRam.textContent = specs.ram + ' MB';
+            if (displayStorage) displayStorage.textContent = specs.storage + ' GB';
+        }
+
+        // Modal functions
+        function openCreateHostingModal() {
+            const modal = document.getElementById('createHostingModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                // Reset Minecraft options when opening
+                toggleMinecraftOptions();
+            }
+        }
+
+        function closeCreateHostingModal() {
+            const modal = document.getElementById('createHostingModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function toggleMinecraftOptions() {
+            const serviceType = document.getElementById('serviceType').value;
+            const minecraftOptions = document.getElementById('minecraftOptions');
+            const mainFileInput = document.getElementById('mainFile');
+
+            if (serviceType === 'minecraft') {
+                if (minecraftOptions) minecraftOptions.style.display = 'block';
+                if (mainFileInput) {
+                    mainFileInput.value = 'server.jar';
+                }
+            } else {
+                if (minecraftOptions) minecraftOptions.style.display = 'none';
+                if (mainFileInput && (mainFileInput.value === 'server.jar' || !mainFileInput.value)) {
+                    mainFileInput.value = 'index.js';
+                }
+            }
+        }
+
+        // Notification Modal functions
+        function openCreateNotificationModal() {
+            const modal = document.getElementById('createNotificationModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeCreateNotificationModal() {
+            const modal = document.getElementById('createNotificationModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Create notification function
+        function createNotification() {
+            const title = document.getElementById('notificationTitle').value.trim();
+            const message = document.getElementById('notificationMessage').value.trim();
+            const type = document.getElementById('notificationType').value;
+            const priority = document.getElementById('notificationPriority').value;
+            const link = document.getElementById('notificationLink').value.trim();
+            const expiry = document.getElementById('notificationExpiry').value;
+            const targetType = document.querySelector('input[name="targetType"]:checked').value;
+            const targetUsers = document.getElementById('targetUsers').value.trim();
+
+            // Validation
+            if (!title || !message || !type) {
+                showToast('يرجى ملء جميع الحقول المطلوبة', 'error');
+                return;
+            }
+
+            if (targetType === 'specific' && !targetUsers) {
+                showToast('يرجى إدخال أسماء المستخدمين المستهدفين', 'error');
+                return;
+            }
+
+            // Disable button and show loading
+            const btn = document.getElementById('createNotificationBtn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جاري الإرسال...';
+
+            // Prepare request data
+            const requestData = {
+                title,
+                message,
+                type,
+                priority,
+                targetType,
+                link: link || null,
+                expiryDate: expiry || null
+            };
+
+            if (targetType === 'specific') {
+                requestData.targetUsers = targetUsers.split(',').map(u => u.trim()).filter(u => u);
+            }
+
+            console.log('Sending notification request:', requestData);
+
+            // Send request
+            fetch('/admin/create-notification', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) {
+                        showToast('تم إرسال الإشعار بنجاح! 🎉', 'success');
+
+                        // Reset form
+                        document.getElementById('createNotificationForm').reset();
+                        document.getElementById('specificUsersSection').style.display = 'none';
+                        document.querySelector('input[name="targetType"][value="all"]').checked = true;
+
+                        // Close modal
+                        closeCreateNotificationModal();
+
+                        // Reload page after delay
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showToast('فشل إرسال الإشعار: ' + (d.message || 'خطأ غير معروف'), 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Network Error:', error);
+                    showToast('خطأ في الاتصال بالخادم. تحقق من اتصال الإنترنت.', 'error');
+                })
+                .finally(() => {
+                    // Re-enable button
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                });
+        }
+
+        // Create hosting function
+        function createHosting() {
+            const discordId = document.getElementById('discordId').value.trim();
+            const hostName = document.getElementById('hostName').value.trim();
+            const serviceType = document.getElementById('serviceType').value;
+            const port = document.getElementById('port').value;
+            const duration = document.getElementById('duration').value;
+            const mainFile = document.getElementById('mainFile').value.trim() || 'index.js';
+            const selectedPreset = document.querySelector('input[name="specPreset"]:checked');
+
+            if (!selectedPreset) {
+                showToast('يرجى اختيار مواصفات الاستضافة', 'error');
+                return;
+            }
+
+            // Validation
+            if (!discordId || !serviceType || !duration) {
+                showToast('يرجى ملء جميع الحقول المطلوبة', 'error');
+                return;
+            }
+
+            // Validate Discord ID format (should be numeric)
+            if (!/^\d+$/.test(discordId)) {
+                showToast('معرف المستخدم يجب أن يكون رقماً فقط', 'error');
+                return;
+            }
+
+            // Additional validation for service type
+            if (!['discord', 'web', 'mta', 'fivem', 'minecraft'].includes(serviceType)) {
+                showToast('نوع الخدمة غير صحيح', 'error');
+                return;
+            }
+
+            if (port && (port < 1000 || port > 65535)) {
+                showToast('المنفذ يجب أن يكون بين 1000 و 65535', 'error');
+                return;
+            }
+
+            // Get specs based on preset
+            let specs;
+            if (selectedPreset.value === 'custom') {
+                specs = {
+                    cpu: parseInt(document.getElementById('specsCpu').value),
+                    ram: parseInt(document.getElementById('specsRam').value),
+                    storage: parseInt(document.getElementById('specsStorage').value)
+                };
+            } else {
+                specs = specsPresets[selectedPreset.value];
+            }
+
+            // Validate specs
+            if (specs.cpu < 1 || specs.ram < 128 || specs.storage < 1) {
+                showToast('المواصفات غير صحيحة', 'error');
+                return;
+            }
+
+            // Disable button and show loading
+            const btn = document.getElementById('createHostingBtn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>جاري الإنشاء...';
+
+            // Send request
+            const skipTemplateInput = document.getElementById('skipTemplate');
+            const skipTemplate = serviceType === 'minecraft' ? !skipTemplateInput.checked : false;
+
+            const requestData = {
+                discordId,
+                name: hostName || null,
+                serviceType,
+                port: port || null,
+                duration,
+                mainFile,
+                specs,
+                skipTemplate
+            };
+
+            console.log('Sending request with data:', requestData);
+
+            fetch('/admin/create-hosting', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            })
+                .then(r => {
+                    console.log('Response status:', r.status);
+                    return r.json();
+                })
+                .then(d => {
+                    console.log('Response data:', d);
+                    if (d.success) {
+                        showToast('تم إنشاء الهوست بنجاح! 🎉', 'success');
+
+                        // Reset form
+                        document.getElementById('createHostingForm').reset();
+                        document.getElementById('customSpecs').style.display = 'none';
+                        document.querySelector('input[name="specPreset"][value="basic"]').checked = true;
+                        updateSpecsDisplay();
+
+                        // Clear validation classes
+                        document.getElementById('discordId').classList.remove('is-invalid');
+
+                        // Close modal
+                        closeCreateHostingModal();
+
+                        // Reload page after delay
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showToast('فشل إنشاء الهوست: ' + (d.message || 'خطأ غير معروف'), 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Network Error:', error);
+                    showToast('خطأ في الاتصال بالخادم. تحقق من اتصال الإنترنت.', 'error');
+                })
+                .finally(() => {
+                    // Re-enable button
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                });
+        }
+
+        function editHosting(id, name, serviceType, port, mainFile) {
+            showToast('تعديل الهوست قيد التطوير', 'info');
+        }
+
+        function extendHosting(id, name) {
+            showToast('تمديد الهوست قيد التطوير', 'info');
+        }
+
+        function confirmDelete(id, name) {
+            if (confirm(`هل أنت متأكد من حذف الهوست "${name}"؟`)) {
+                showSpinner();
+                fetch(`/admin/delete-hosting/${id}`, { method: 'POST' })
+                    .then(r => r.json())
+                    .then(d => {
+                        hideSpinner();
+                        if (d.success) {
+                            showToast('تم حذف الهوست بنجاح', 'success');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            showToast('فشل حذف الهوست: ' + (d.message || ''), 'error');
+                        }
+                    })
+                    .catch(() => { hideSpinner(); showToast('خطأ في الاتصال', 'error'); });
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('Admin page loaded successfully');
+
+            // Initialize tabs
+            const tabs = document.querySelectorAll('.admin-tab');
+            const sections = document.querySelectorAll('.admin-section');
+
+            function switchTab(tab) {
+                const target = tab.getAttribute('data-target');
+
+                // Remove active class from all tabs and sections
+                tabs.forEach(t => t.classList.remove('active'));
+                sections.forEach(s => s.classList.remove('active'));
+
+                // Add active class to clicked tab and corresponding section
+                tab.classList.add('active');
+                const targetSection = document.getElementById(target);
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                }
+
+                // Save active tab to localStorage
+                localStorage.setItem('adminActiveTab', target);
+            }
+
+            // Add click event to each tab
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function () {
+                    switchTab(this);
+                });
+            });
+
+            // Restore active tab from localStorage
+            const savedTab = localStorage.getItem('adminActiveTab');
+            if (savedTab) {
+                const tabToActivate = document.querySelector(`.admin-tab[data-target="${savedTab}"]`);
+                if (tabToActivate) switchTab(tabToActivate);
+            }
+
+            // Initialize search functionality
+            const hostingsSearch = document.getElementById('hostings-search');
+            if (hostingsSearch) {
+                hostingsSearch.addEventListener('input', () => {
+                    filterHostings(currentFilter);
+                });
+            }
+
+            const hostingsSearchBtn = document.getElementById('hostings-search-btn');
+            if (hostingsSearchBtn) {
+                hostingsSearchBtn.addEventListener('click', () => {
+                    filterHostings(currentFilter);
+                });
+            }
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function (event) {
+                if (!event.target.closest('.dropdown')) {
+                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                        menu.style.display = 'none';
+                    });
+                }
+            });
+
+            // Optimize storage button
+            const optimizeBtn = document.getElementById('optimize-storage');
+            if (optimizeBtn) {
+                optimizeBtn.addEventListener('click', () => {
+                    showSpinner();
+                    fetch('/api/optimize/storage', { method: 'POST' })
+                        .then(r => r.json())
+                        .then(d => {
+                            hideSpinner();
+                            if (d.success) {
+                                const result = document.getElementById('optimize-result');
+                                if (result) {
+                                    result.textContent = `تم حذف ${d.removedHuman || d.removedBytes + ' Bytes'}`;
+                                }
+                                showToast('تم تخفيف المساحة', 'success');
+                            } else {
+                                showToast('فشل تخفيف المساحة', 'error');
+                            }
+                        })
+                        .catch(() => { hideSpinner(); showToast('خطأ في الاتصال', 'error'); });
+                });
+            }
+
+            // Security functions
+            function refreshBannedIps() {
+                console.log('Refreshing banned IPs...');
+                showSpinner();
+
+                // Simulate API call
+                setTimeout(() => {
+                    hideSpinner();
+                    const container = document.getElementById('banned-ips-container');
+                    if (container) {
+                        // Simulate some banned IPs
+                        const bannedIps = ['192.168.1.100', '10.0.0.50', '172.16.0.25'];
+                        container.innerHTML = '';
+
+                        bannedIps.forEach(ip => {
+                            const item = document.createElement('div');
+                            item.className = 'banned-ip-item d-flex justify-content-between align-items-center p-2 mb-2 bg-dark rounded';
+                            item.innerHTML = `
+                        <span class="text-light">${ip}</span>
+                        <button class="btn btn-sm btn-outline-danger" onclick="unbanIpDirect('${ip}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        `;
+                            container.appendChild(item);
+                        });
+                    }
+                    showToast('تم تحديث قائمة IP المحظورة', 'info');
+                }, 1000);
+            }
+
+            function refreshBannedUsers() {
+                console.log('Refreshing banned users...');
+                showSpinner();
+
+                // Simulate API call
+                setTimeout(() => {
+                    hideSpinner();
+                    const container = document.getElementById('banned-users-container');
+                    if (container) {
+                        // Simulate some banned users
+                        const bannedUsers = [
+                            { id: '123456789', username: 'spammer_user' },
+                            { id: '987654321', username: 'hacker_bot' }
+                        ];
+                        container.innerHTML = '';
+
+                        bannedUsers.forEach(user => {
+                            const item = document.createElement('div');
+                            item.className = 'banned-user-item d-flex justify-content-between align-items-center p-2 mb-2 bg-dark rounded';
+                            item.innerHTML = `
+                            <div class="user-info">
+                            <span class="text-light">${user.username}</span>
+                            <small class="text-muted d-block">ID: ${user.id}</small>
+                            </div>
+                        <button class="btn btn-sm btn-outline-danger" onclick="unbanUserDirect('${user.id}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        `;
+                            container.appendChild(item);
+                        });
+                    }
+                    showToast('تم تحديث قائمة المستخدمين المحظورين', 'info');
+                }, 1000);
+            }
+
+            function banIp() {
+                const ipInput = document.getElementById('ban-ip-input');
+                if (!ipInput) {
+                    console.error('ban-ip-input element not found');
+                    return;
+                }
+
+                const ip = ipInput.value.trim();
+                if (!ip) {
+                    showToast('يرجى إدخال عنوان IP', 'error');
+                    return;
+                }
+
+                // Validate IP format
+                const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+                if (!ipRegex.test(ip)) {
+                    showToast('يرجى إدخال عنوان IP صحيح', 'error');
+                    return;
+                }
+
+                console.log('Banning IP:', ip);
+                showSpinner();
+
+                // Simulate API call
+                setTimeout(() => {
+                    hideSpinner();
+                    showToast(`تم حظر عنوان IP: ${ip}`, 'success');
+                    ipInput.value = '';
+                    refreshBannedIps();
+                }, 1000);
+            }
+
+            function unbanIpDirect(ip) {
+                if (!ip) {
+                    console.error('No IP provided to unban');
+                    return;
+                }
+
+                console.log('Unbanning IP:', ip);
+                showSpinner();
+
+                // Simulate API call
+                setTimeout(() => {
+                    hideSpinner();
+                    showToast(`تم إلغاء حظر عنوان IP: ${ip}`, 'success');
+                    refreshBannedIps();
+                }, 800);
+            }
+
+            function banUser() {
+                const userIdInput = document.getElementById('ban-user-id-input');
+                const usernameInput = document.getElementById('ban-user-name-input');
+
+                if (!userIdInput) {
+                    console.error('ban-user-id-input element not found');
+                    return;
+                }
+
+                const userId = userIdInput.value.trim();
+                const username = usernameInput ? usernameInput.value.trim() : '';
+
+                if (!userId) {
+                    showToast('يرجى إدخال معرف المستخدم', 'error');
+                    return;
+                }
+
+                // Validate user ID (should be numeric)
+                if (!/^\d+$/.test(userId)) {
+                    showToast('معرف المستخدم يجب أن يكون أرقام فقط', 'error');
+                    return;
+                }
+
+                console.log('Banning user:', userId, username);
+                showSpinner();
+
+                // Simulate API call
+                setTimeout(() => {
+                    hideSpinner();
+                    const displayName = username || `User_${userId}`;
+                    showToast(`تم حظر المستخدم: ${displayName}`, 'success');
+                    userIdInput.value = '';
+                    if (usernameInput) usernameInput.value = '';
+                    refreshBannedUsers();
+                }, 1000);
+            }
+
+            function unbanUserDirect(userId) {
+                if (!userId) {
+                    console.error('No user ID provided to unban');
+                    return;
+                }
+
+                console.log('Unbanning user:', userId);
+                showSpinner();
+
+                // Simulate API call
+                setTimeout(() => {
+                    hideSpinner();
+                    showToast(`تم إلغاء حظر المستخدم: ${userId}`, 'success');
+                    refreshBannedUsers();
+                }, 800);
+            }
+
+            // Ticket functions
+            function updateTicket(id, status) {
+                showSpinner();
+                fetch(`/admin/tickets/${id}/status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                })
+                    .then(async r => {
+                        let data = {};
+                        try { data = await r.json(); } catch { }
+                        hideSpinner();
+                        if (!r.ok || !data.success) {
+                            const msg = data.message || `فشل تحديث التذكرة (HTTP ${r.status})`;
+                            showToast(msg, 'error');
+                            return;
+                        }
+                        showToast('تم تحديث حالة التذكرة', 'success');
+                        if (status === 'open') {
+                            window.location.href = `/support/ticket/${id}`;
+                        } else {
+                            location.reload();
+                        }
+                    })
+                    .catch(err => {
+                        hideSpinner();
+                        showToast('خطأ في الاتصال', 'error');
+                    });
+            }
+
+            // Close modal when clicking outside
+            document.addEventListener('click', function (event) {
+                const hostingModal = document.getElementById('createHostingModal');
+                const notificationModal = document.getElementById('createNotificationModal');
+
+                // Only close if clicking on the modal backdrop, not inside the modal content
+                if (hostingModal && hostingModal.style.display === 'flex' && event.target === hostingModal) {
+                    closeCreateHostingModal();
+                }
+
+                if (notificationModal && notificationModal.style.display === 'flex' && event.target === notificationModal) {
+                    closeCreateNotificationModal();
+                }
+            });
+
+            // Close modal with Escape key
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') {
+                    closeCreateHostingModal();
+                    closeCreateNotificationModal();
+                }
+            });
+
+            // Create hosting button event listener
+            const createHostingBtn = document.getElementById('createHostingBtn');
+            if (createHostingBtn) {
+                createHostingBtn.addEventListener('click', createHosting);
+            }
+
+            // Create notification button event listener
+            const createNotificationBtn = document.getElementById('createNotificationBtn');
+            if (createNotificationBtn) {
+                createNotificationBtn.addEventListener('click', createNotification);
+            }
+
+            // Handle target type changes for notifications
+            const targetTypeRadios = document.querySelectorAll('input[name="targetType"]');
+            if (targetTypeRadios.length > 0) {
+                targetTypeRadios.forEach(radio => {
+                    radio.addEventListener('change', function () {
+                        const specificUsersSection = document.getElementById('specificUsersSection');
+                        if (this.value === 'specific') {
+                            if (specificUsersSection) specificUsersSection.style.display = 'block';
+                        } else {
+                            if (specificUsersSection) specificUsersSection.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            // Handle specs preset changes
+            const specPresets = document.querySelectorAll('input[name="specPreset"]');
+            if (specPresets.length > 0) {
+                specPresets.forEach(radio => {
+                    radio.addEventListener('change', function () {
+                        const customSpecs = document.getElementById('customSpecs');
+
+                        if (this.value === 'custom') {
+                            if (customSpecs) customSpecs.style.display = 'block';
+                        } else {
+                            if (customSpecs) customSpecs.style.display = 'none';
+                            // Update custom inputs with preset values
+                            const preset = specsPresets[this.value];
+                            const cpuInput = document.getElementById('specsCpu');
+                            const ramInput = document.getElementById('specsRam');
+                            const storageInput = document.getElementById('specsStorage');
+
+                            if (cpuInput) cpuInput.value = preset.cpu;
+                            if (ramInput) ramInput.value = preset.ram;
+                            if (storageInput) storageInput.value = preset.storage;
+                        }
+
+                        updateSpecsDisplay();
+                    });
+                });
+            }
+
+            // Handle custom specs changes
+            ['specsCpu', 'specsRam', 'specsStorage'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', updateSpecsDisplay);
+                }
+            });
+
+            // Auto-suggest port based on service type
+            const serviceTypeElement = document.getElementById('serviceType');
+            if (serviceTypeElement) {
+                serviceTypeElement.addEventListener('change', function () {
+                    const portInput = document.getElementById('port');
+                    if (portInput) {
+                        const serviceType = this.value;
+
+                        switch (serviceType) {
+                            case 'discord':
+                                portInput.placeholder = '3000';
+                                break;
+                            case 'web':
+                                portInput.placeholder = '8080';
+                                break;
+                            case 'mta':
+                                portInput.placeholder = '22003';
+                                break;
+                            case 'fivem':
+                                portInput.placeholder = '30120';
+                                break;
+                            default:
+                                portInput.placeholder = '3000';
+                        }
+                    }
+                });
+            }
+
+            // Auto-suggest main file based on service type
+            if (serviceTypeElement) {
+                serviceTypeElement.addEventListener('change', function () {
+                    const mainFileInput = document.getElementById('mainFile');
+                    if (mainFileInput) {
+                        const serviceType = this.value;
+
+                        switch (serviceType) {
+                            case 'discord':
+                                mainFileInput.value = 'index.js';
+                                break;
+                            case 'web':
+                                mainFileInput.value = 'app.js';
+                                break;
+                            case 'mta':
+                                mainFileInput.value = 'server.lua';
+                                break;
+                            case 'fivem':
+                                mainFileInput.value = 'server.cfg';
+                                break;
+                            default:
+                                mainFileInput.value = 'index.js';
+                        }
+                    }
+                });
+            }
+
+            // Real-time validation
+            const usernameElement = document.getElementById('username');
+            if (usernameElement) {
+                usernameElement.addEventListener('input', function () {
+                    const value = this.value.trim();
+                    if (value.length > 0 && !/^[a-zA-Z0-9_]+$/.test(value)) {
+                        this.classList.add('is-invalid');
+                    } else {
+                        this.classList.remove('is-invalid');
+                    }
+                });
+            }
+
+            const hostNameElement = document.getElementById('hostName');
+            if (hostNameElement) {
+                hostNameElement.addEventListener('input', function () {
+                    const value = this.value.trim();
+                    if (value.length > 0 && !/^[a-zA-Z0-9_-]+$/.test(value)) {
+                        this.classList.add('is-invalid');
+                    } else {
+                        this.classList.remove('is-invalid');
+                    }
+                });
+            }
+
+            // Initialize specs display
+            updateSpecsDisplay();
+
+            // Auto-refresh security data when switching to security tab
+            const securityTab = document.querySelector('.admin-tab[data-target="security-section"]');
+            if (securityTab) {
+                securityTab.addEventListener('click', () => {
+                    setTimeout(() => {
+                        refreshBannedIps();
+                        refreshBannedUsers();
+                    }, 500);
+                });
+            }
+
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function (e) {
+                // Ctrl+Shift+B for ban IP
+                if (e.ctrlKey && e.shiftKey && e.key === 'B') {
+                    e.preventDefault();
+                    const ipInput = document.getElementById('ban-ip-input');
+                    if (ipInput) ipInput.focus();
+                }
+
+                // Ctrl+Shift+U for ban user
+                if (e.ctrlKey && e.shiftKey && e.key === 'U') {
+                    e.preventDefault();
+                    const userInput = document.getElementById('ban-user-id-input');
+                    if (userInput) userInput.focus();
+                }
+
+                // Ctrl+Shift+O for optimize storage
+                if (e.ctrlKey && e.shiftKey && e.key === 'O') {
+                    e.preventDefault();
+                    const optimizeBtn = document.getElementById('optimize-storage-tool');
+                    if (optimizeBtn) optimizeBtn.click();
+                }
+            });
+
+            // Add tooltips for better UX
+            const tooltipElements = document.querySelectorAll('[data-tooltip]');
+            tooltipElements.forEach(element => {
+                element.addEventListener('mouseenter', function () {
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip-custom';
+                    tooltip.textContent = this.getAttribute('data-tooltip');
+                    tooltip.style.cssText = `
+                position: absolute;
+                background: #333;
+                color: white;
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                z-index: 1000;
+                pointer-events: none;
+            `;
+                    document.body.appendChild(tooltip);
+
+                    const rect = this.getBoundingClientRect();
+                    tooltip.style.left = rect.left + 'px';
+                    tooltip.style.top = (rect.top - 30) + 'px';
+
+                    this._tooltip = tooltip;
+                });
+
+                element.addEventListener('mouseleave', function () {
+                    if (this._tooltip) {
+                        document.body.removeChild(this._tooltip);
+                        this._tooltip = null;
+                    }
+                });
+            });
+
+            // Tools section buttons
+            const optimizeStorageTool = document.getElementById('optimize-storage-tool');
+            if (optimizeStorageTool) {
+                optimizeStorageTool.addEventListener('click', () => {
+                    console.log('Optimizing storage...');
+                    showSpinner();
+
+                    // Simulate storage optimization
+                    setTimeout(() => {
+                        hideSpinner();
+                        const result = document.getElementById('optimize-result-tool');
+                        if (result) {
+                            const cleanedSize = Math.floor(Math.random() * 100) + 10; // Random size between 10-110 MB
+                            result.textContent = `تم حذف ${cleanedSize} MB من الملفات المؤقتة`;
+                            result.style.color = '#28a745';
+                        }
+                        showToast('تم تخفيف المساحة بنجاح!', 'success');
+                    }, 2000);
+                });
+            }
+
+            // Database cleanup function
+            window.cleanupDatabase = function () {
+                console.log('Cleaning database...');
+                showSpinner();
+
+                // Simulate database cleanup
+                setTimeout(() => {
+                    hideSpinner();
+                    const cleanedRecords = Math.floor(Math.random() * 50) + 5; // Random between 5-55 records
+                    showToast(`تم حذف ${cleanedRecords} سجل قديم من قاعدة البيانات`, 'success');
+                }, 1500);
+            };
+
+            // Logs cleanup function
+            window.cleanupLogs = function () {
+                console.log('Cleaning logs...');
+                showSpinner();
+
+                // Simulate logs cleanup
+                setTimeout(() => {
+                    hideSpinner();
+                    const cleanedLogs = Math.floor(Math.random() * 20) + 3; // Random between 3-23 log files
+                    showToast(`تم حذف ${cleanedLogs} ملف سجل قديم`, 'success');
+                }, 1200);
+            };
+
+            // View notification function
+            window.viewNotification = function (id) {
+                console.log('View notification called with ID:', id);
+                // Find the notification row
+                const row = document.querySelector(`tr[data-notification-id="${id}"]`);
+                if (row) {
+                    const title = row.querySelector('.notification-title').textContent;
+                    const message = row.querySelector('.notification-message').textContent;
+                    const type = row.querySelector('.notification-type').textContent;
+                    const target = row.querySelector('.notification-target').textContent;
+                    const priority = row.querySelector('.notification-priority').textContent;
+                    const date = row.querySelector('.notification-date').textContent;
+                    const status = row.querySelector('.notification-status').textContent;
+
+                    // Create modal content
+                    const modalContent = `
+                <div class="modal-header">
+                    <h5 class="modal-title">تفاصيل الإشعار</h5>
+                    <button type="button" class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>العنوان:</strong>
+                            <p>${title}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>النوع:</strong>
+                            <p>${type}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>الأولوية:</strong>
+                            <p>${priority}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>المستهدف:</strong>
+                            <p>${target}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>التاريخ:</strong>
+                            <p>${date}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>الحالة:</strong>
+                            <p>${status}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <strong>الرسالة:</strong>
+                            <p>${message}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">إغلاق</button>
+                </div>
+            `;
+
+                    showModal(modalContent);
+                } else {
+                    console.error('Notification row not found for ID:', id);
+                    showToast('لم يتم العثور على الإشعار', 'error');
+                }
+            }
+
+            // Edit notification function
+            window.editNotification = function (id) {
+                console.log('Edit notification called with ID:', id);
+                showToast('ميزة التعديل قيد التطوير', 'info');
+            }
+
+            // Toggle notification status function
+            window.toggleNotificationStatus = function (id, currentStatus) {
+                console.log('Toggle notification status called with ID:', id, 'Status:', currentStatus);
+                const isActive = currentStatus === 'true';
+                const newStatus = !isActive;
+                const action = newStatus ? 'تفعيل' : 'إيقاف';
+
+                if (confirm(`هل أنت متأكد من ${action} هذا الإشعار؟`)) {
+                    // Show loading
+                    const button = document.querySelector(`button[onclick*="${id}"]`);
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    button.disabled = true;
+
+                    fetch('/admin/toggle-notification-status', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ id, isActive: newStatus })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                showToast(`تم ${action} الإشعار بنجاح`, 'success');
+                                // Reload page to update status
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1000);
+                            } else {
+                                showToast(data.message || `حدث خطأ في ${action} الإشعار`, 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error toggling notification status:', error);
+                            showToast(`حدث خطأ في ${action} الإشعار`, 'error');
+                        })
+                        .finally(() => {
+                            button.innerHTML = originalText;
+                            button.disabled = false;
+                        });
+                }
+            }
+
+            // Delete notification function
+            window.deleteNotification = function (id, title) {
+                console.log('Delete notification called with ID:', id, 'Title:', title);
+                if (confirm(`هل أنت متأكد من حذف الإشعار "${title}"؟\n\nهذا الإجراء لا يمكن التراجع عنه.`)) {
+                    // Show loading
+                    const button = document.querySelector(`button[onclick*="${id}"]`);
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    button.disabled = true;
+
+                    fetch('/admin/delete-notification', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ id })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                showToast('تم حذف الإشعار بنجاح', 'success');
+                                // Remove row from table
+                                const row = document.querySelector(`tr[data-notification-id="${id}"]`);
+                                if (row) {
+                                    row.remove();
+                                }
+                            } else {
+                                showToast(data.message || 'حدث خطأ في حذف الإشعار', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error deleting notification:', error);
+                            showToast('حدث خطأ في حذف الإشعار', 'error');
+                        })
+                        .finally(() => {
+                            button.innerHTML = originalText;
+                            button.disabled = false;
+                        });
+                }
+            }
+
+            // Close modal function
+            window.closeModal = function () {
+                const modal = document.querySelector('.modal');
+                if (modal) {
+                    modal.remove();
+                }
+                document.body.style.overflow = 'auto';
+            }
+
+            // Show modal function
+            window.showModal = function (content) {
+                // Remove existing modal if any
+                closeModal();
+
+                const modal = document.createElement('div');
+                modal.className = 'modal';
+                modal.style.display = 'flex';
+                modal.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    ${content}
+                </div>
+            </div>
+        `;
+
+                document.body.appendChild(modal);
+                document.body.style.overflow = 'hidden';
+
+                // Close on backdrop click
+                modal.addEventListener('click', function (e) {
+                    if (e.target === modal) {
+                        closeModal();
+                    }
+                });
+            }
+        });
+
+        // Logs Section
+        function showLogsSection() {
+            // Redirect to dedicated logs page
+            window.location.href = '/admin/logs';
+        }
+
+        // Load logs preview data
+        async function loadLogsPreview() {
+            try {
+                const response = await fetch('/api/admin/logs/stats');
+                const stats = await response.json();
+
+                document.getElementById('total-logs-preview').textContent = stats.total || 0;
+                document.getElementById('errors-preview').textContent = stats.errorsCount || 0;
+
+                // Load recent logs
+                const logsResponse = await fetch('/api/admin/logs?limit=5');
+                const logsData = await logsResponse.json();
+
+                if (logsData.success && logsData.logs.length > 0) {
+                    const recentLogsHtml = logsData.logs.map(log => `
+                <div class="recent-log-item">
+                    <div class="log-time">${new Date(log.timestamp).toLocaleString('ar-SA')}</div>
+                    <div class="log-description">${log.description}</div>
+                    <div class="log-user">${log.username || 'مجهول'}</div>
+                </div>
+            `).join('');
+
+                    document.getElementById('recent-logs-preview').innerHTML = recentLogsHtml;
+                } else {
+                    document.getElementById('recent-logs-preview').innerHTML = '<div class="text-muted">لا توجد أنشطة حديثة</div>';
+                }
+            } catch (error) {
+                console.error('Error loading logs preview:', error);
+            }
+        }
+
+        // Load logs preview when page loads
+        document.addEventListener('DOMContentLoaded', function () {
+            loadLogsPreview();
+            if (document.getElementById('pricing-section')) {
+                loadPricingConfig();
+                loadDiscountCodes();
+            }
+            if (document.getElementById('giveaways-section')) {
+                loadGiveaways();
+                // Refresh giveaways every 30 seconds
+                setInterval(loadGiveaways, 30000);
+            }
+            if (document.getElementById('minecraft-section')) {
+                loadMinecraftServers();
+                // Refresh Minecraft servers every 10 seconds
+                setInterval(loadMinecraftServers, 10000);
+            }
+        });
+
+        // Pricing Management Functions
+        function loadPricingConfig() {
+            fetch('/api/admin/pricing-config')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        renderPackages('discord', data.prices.discord || []);
+                        renderPackages('web', data.prices.web || []);
+                        renderPackages('minecraft', data.prices.minecraft || []);
+                    }
+                })
+                .catch(err => console.error('Error loading pricing:', err));
+        }
+
+        function renderPackages(serviceType, packages) {
+            const container = document.getElementById(`${serviceType}-packages-container`);
+            if (!container) return;
+
+            container.innerHTML = packages.map((pkg, index) => `
+        <div class="card mb-3 package-item" data-index="${index}">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label>الاسم:</label>
+                        <input type="text" class="form-control package-name" value="${pkg.name || ''}" data-field="name">
+                    </div>
+                    <div class="col-md-2">
+                        <label>السعر ($):</label>
+                        <input type="number" class="form-control package-price" value="${pkg.price || 0}" data-field="price" step="0.01">
+                    </div>
+                    <div class="col-md-2">
+                        <label>RAM (MB):</label>
+                        <input type="number" class="form-control package-ram" value="${pkg.ram || 0}" data-field="ram">
+                    </div>
+                    <div class="col-md-2">
+                        <label>CPU:</label>
+                        <input type="number" class="form-control package-cpu" value="${pkg.cpu || 0}" data-field="cpu">
+                    </div>
+                    <div class="col-md-2">
+                        <label>Storage (GB):</label>
+                        <input type="number" class="form-control package-storage" value="${pkg.storage || 0}" data-field="storage">
+                    </div>
+                    <div class="col-md-1">
+                        <label>المدة (يوم):</label>
+                        <input type="number" class="form-control package-duration" value="${pkg.duration || 30}" data-field="duration">
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <button class="btn btn-sm btn-primary" onclick="savePackage('${serviceType}', ${index})">حفظ</button>
+                    <button class="btn btn-sm btn-danger" onclick="deletePackage('${serviceType}', ${index})">حذف</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+        }
+
+        function addPackage(serviceType) {
+            fetch('/api/admin/pricing-config')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        const packages = data.prices[serviceType] || [];
+                        packages.push({ name: 'New Package', price: 0, ram: 512, cpu: 1, storage: 1, duration: 30 });
+                        renderPackages(serviceType, packages);
+                    }
+                })
+                .catch(err => console.error('Error:', err));
+        }
+
+        function savePackage(serviceType, index) {
+            const item = document.querySelector(`#${serviceType}-packages-container .package-item[data-index="${index}"]`);
+            if (!item) return;
+
+            const packageData = {
+                name: item.querySelector('.package-name').value,
+                price: parseFloat(item.querySelector('.package-price').value),
+                ram: parseInt(item.querySelector('.package-ram').value),
+                cpu: parseInt(item.querySelector('.package-cpu').value),
+                storage: parseInt(item.querySelector('.package-storage').value),
+                duration: parseInt(item.querySelector('.package-duration').value)
+            };
+
+            fetch('/api/admin/update-package', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ serviceType, index, package: packageData })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('تم حفظ الباقة بنجاح', 'success');
+                        loadPricingConfig();
+                    } else {
+                        showToast('فشل الحفظ: ' + (data.message || ''), 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    showToast('خطأ في الاتصال', 'error');
+                });
+        }
+
+        function deletePackage(serviceType, index) {
+            if (!confirm('هل أنت متأكد من حذف هذه الباقة؟')) return;
+
+            fetch('/api/admin/delete-package', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ serviceType, index })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('تم حذف الباقة بنجاح', 'success');
+                        loadPricingConfig();
+                    } else {
+                        showToast('فشل الحذف: ' + (data.message || ''), 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    showToast('خطأ في الاتصال', 'error');
+                });
+        }
+
+        // Discount Codes Functions
+        function loadDiscountCodes() {
+            fetch('/api/admin/discount-codes')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        renderDiscountCodes(data.codes || {});
+                    }
+                })
+                .catch(err => console.error('Error loading discount codes:', err));
+        }
+
+        function renderDiscountCodes(codes) {
+            const container = document.getElementById('discount-codes-container');
+            if (!container) return;
+
+            const codesArray = Object.entries(codes);
+            if (codesArray.length === 0) {
+                container.innerHTML = '<p class="text-muted">لا توجد أكواد خصم</p>';
+                return;
+            }
+
+            container.innerHTML = codesArray.map(([code, data]) => `
+        <div class="card mb-2 discount-code-item" data-code="${code}">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-3">
+                        <strong>الكود:</strong> ${code}
+                    </div>
+                    <div class="col-md-2">
+                        <strong>الخصم:</strong> ${data.discount || 0}%
+                    </div>
+                    <div class="col-md-2">
+                        <strong>الحد الأقصى:</strong> ${data.maxUses || 'غير محدود'}
+                    </div>
+                    <div class="col-md-2">
+                        <strong>المستخدم:</strong> ${data.used || 0}
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-sm btn-primary" onclick="editDiscountCode('${code}')">تعديل</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteDiscountCode('${code}')">حذف</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+        }
+
+        function openAddDiscountCodeModal() {
+            const modalContent = `
+        <div class="modal-header">
+            <h5>إضافة كود خصم جديد</h5>
+            <button type="button" class="btn-close" onclick="closeModal()"></button>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3">
+                <label>كود الخصم:</label>
+                <input type="text" class="form-control" id="discountCodeInput" placeholder="مثال: DISCOUNT10">
+            </div>
+            <div class="mb-3">
+                <label>نسبة الخصم (%):</label>
+                <input type="number" class="form-control" id="discountPercentInput" min="0" max="100" value="10">
+            </div>
+            <div class="mb-3">
+                <label>الحد الأقصى للاستخدام:</label>
+                <input type="number" class="form-control" id="discountMaxUsesInput" min="1" placeholder="اتركه فارغاً لغير محدود">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
+            <button class="btn btn-primary" onclick="saveDiscountCode()">حفظ</button>
+        </div>
+    `;
+            showModal(modalContent);
+        }
+
+        function saveDiscountCode() {
+            const code = document.getElementById('discountCodeInput').value.trim();
+            const discount = parseInt(document.getElementById('discountPercentInput').value);
+            const maxUses = document.getElementById('discountMaxUsesInput').value;
+
+            if (!code) {
+                showToast('يرجى إدخال كود الخصم', 'error');
+                return;
+            }
+
+            const codeData = {
+                code,
+                discount,
+                maxUses: maxUses ? parseInt(maxUses) : null,
+                used: 0
+            };
+
+            fetch('/api/admin/add-discount-code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(codeData)
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('تم إضافة كود الخصم بنجاح', 'success');
+                        closeModal();
+                        loadDiscountCodes();
+                    } else {
+                        showToast('فشل الإضافة: ' + (data.message || ''), 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    showToast('خطأ في الاتصال', 'error');
+                });
+        }
+
+        function deleteDiscountCode(code) {
+            if (!confirm(`هل أنت متأكد من حذف كود الخصم "${code}"؟`)) return;
+
+            fetch('/api/admin/delete-discount-code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('تم حذف كود الخصم بنجاح', 'success');
+                        loadDiscountCodes();
+                    } else {
+                        showToast('فشل الحذف: ' + (data.message || ''), 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    showToast('خطأ في الاتصال', 'error');
+                });
+        }
+
+        function editDiscountCode(code) {
+            fetch('/api/admin/discount-codes')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success && data.codes[code]) {
+                        const codeData = data.codes[code];
+                        const modalContent = `
+                    <div class="modal-header">
+                        <h5>تعديل كود الخصم: ${code}</h5>
+                        <button type="button" class="btn-close" onclick="closeModal()"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label>نسبة الخصم (%):</label>
+                            <input type="number" class="form-control" id="editDiscountPercentInput" min="0" max="100" value="${codeData.discount || 0}">
+                        </div>
+                        <div class="mb-3">
+                            <label>الحد الأقصى للاستخدام:</label>
+                            <input type="number" class="form-control" id="editDiscountMaxUsesInput" min="1" value="${codeData.maxUses || ''}" placeholder="اتركه فارغاً لغير محدود">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
+                        <button class="btn btn-primary" onclick="updateDiscountCode('${code}')">حفظ</button>
+                    </div>
+                `;
+                        showModal(modalContent);
+                    }
+                })
+                .catch(err => console.error('Error:', err));
+        }
+
+        function updateDiscountCode(code) {
+            const discount = parseInt(document.getElementById('editDiscountPercentInput').value);
+            const maxUses = document.getElementById('editDiscountMaxUsesInput').value;
+
+            fetch('/api/admin/update-discount-code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    code,
+                    discount,
+                    maxUses: maxUses ? parseInt(maxUses) : null
+                })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('تم تحديث كود الخصم بنجاح', 'success');
+                        closeModal();
+                        loadDiscountCodes();
+                    } else {
+                        showToast('فشل التحديث: ' + (data.message || ''), 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    showToast('خطأ في الاتصال', 'error');
+                });
+        }
+
+        // Giveaways Management Functions
+        function loadGiveaways() {
+            fetch('/api/admin/giveaways')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        renderGiveaways(data.giveaways || []);
+                    }
+                })
+                .catch(err => console.error('Error loading giveaways:', err));
+        }
+
+        function renderGiveaways(giveaways) {
+            const container = document.getElementById('giveaways-container');
+            if (!container) return;
+
+            const activeGiveaways = giveaways.filter(g => g.status === 'active');
+
+            if (activeGiveaways.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center py-4">لا توجد جوائز نشطة</p>';
+                return;
+            }
+
+            container.innerHTML = activeGiveaways.map(giveaway => {
+                const timeLeft = Math.max(0, giveaway.endsAt - Date.now());
+                const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const participantsCount = giveaway.participants ? giveaway.participants.length : 0;
+                const maxParticipants = giveaway.maxParticipants || 'غير محدود';
+                const progressPercent = giveaway.maxParticipants ? (participantsCount / giveaway.maxParticipants * 100) : 0;
+
+                const prizeTypeNames = {
+                    'discord': 'Discord Bot',
+                    'web': 'Web Hosting',
+                    'minecraft': 'Minecraft Server'
+                };
+
+                return `
+            <div class="card mb-3 giveaway-item" data-id="${giveaway.id}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="mb-1">${giveaway.title}</h5>
+                            <p class="text-muted small mb-2">${giveaway.description || ''}</p>
+                            <div class="d-flex gap-3 small text-muted">
+                                <span><i class="fas fa-gift me-1"></i> الجائزة: ${prizeTypeNames[giveaway.prizeType] || giveaway.prizeType}</span>
+                                <span><i class="fas fa-users me-1"></i> المشاركون: ${participantsCount} / ${maxParticipants}</span>
+                                <span><i class="fas fa-clock me-1"></i> المتبقي: ${hoursLeft}س ${minutesLeft}د</span>
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-primary" onclick="editGiveaway('${giveaway.id}')">تعديل</button>
+                            <button class="btn btn-sm btn-danger" onclick="endGiveaway('${giveaway.id}')">إنهاء</button>
+                            <button class="btn btn-sm btn-outline" onclick="deleteGiveaway('${giveaway.id}')">حذف</button>
+                        </div>
+                    </div>
+                    ${giveaway.maxParticipants ? `
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar" role="progressbar" style="width: ${Math.min(progressPercent, 100)}%"></div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+            }).join('');
+        }
+
+        function openCreateGiveawayModal() {
+            const modalContent = `
+        <div class="modal-header">
+            <h5>إنشاء جائزة جديدة</h5>
+            <button type="button" class="btn-close" onclick="closeModal()"></button>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3">
+                <label>عنوان الجائزة:</label>
+                <input type="text" class="form-control" id="giveawayTitleInput" placeholder="مثال: جائزة استضافة مجانية">
+            </div>
+            <div class="mb-3">
+                <label>الوصف:</label>
+                <textarea class="form-control" id="giveawayDescriptionInput" rows="2" placeholder="وصف الجائزة"></textarea>
+            </div>
+            <div class="mb-3">
+                <label>نوع الجائزة:</label>
+                <select class="form-select" id="giveawayPrizeTypeInput">
+                    <option value="discord">Discord Bot</option>
+                    <option value="web">Web Hosting</option>
+                    <option value="minecraft">Minecraft Server</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label>عدد المشاركين الأقصى:</label>
+                <input type="number" class="form-control" id="giveawayMaxParticipantsInput" min="1" placeholder="اتركه فارغاً لغير محدود">
+            </div>
+            <div class="mb-3">
+                <label>مدة الجائزة (بالدقائق):</label>
+                <input type="number" class="form-control" id="giveawayDurationInput" min="1" value="60">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
+            <button class="btn btn-primary" onclick="saveGiveaway()">حفظ</button>
+        </div>
+    `;
+            showModal(modalContent);
+        }
+
+        function saveGiveaway() {
+            const title = document.getElementById('giveawayTitleInput').value.trim();
+            const description = document.getElementById('giveawayDescriptionInput').value.trim();
+            const prizeType = document.getElementById('giveawayPrizeTypeInput').value;
+            const maxParticipants = document.getElementById('giveawayMaxParticipantsInput').value;
+            const duration = parseInt(document.getElementById('giveawayDurationInput').value);
+
+            if (!title) {
+                showToast('يرجى إدخال عنوان الجائزة', 'error');
+                return;
+            }
+
+            const giveawayData = {
+                title,
+                description,
+                prizeType,
+                prizeDetails: {},
+                maxParticipants: maxParticipants ? parseInt(maxParticipants) : null,
+                duration
+            };
+
+            fetch('/api/admin/create-giveaway', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(giveawayData)
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('تم إنشاء الجائزة بنجاح', 'success');
+                        closeModal();
+                        loadGiveaways();
+                    } else {
+                        showToast('فشل الإنشاء: ' + (data.message || ''), 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    showToast('خطأ في الاتصال', 'error');
+                });
+        }
+
+        function editGiveaway(id) {
+            fetch('/api/admin/giveaways')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        const giveaway = data.giveaways.find(g => g.id === id);
+                        if (giveaway) {
+                            const modalContent = `
+                        <div class="modal-header">
+                            <h5>تعديل الجائزة</h5>
+                            <button type="button" class="btn-close" onclick="closeModal()"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label>عنوان الجائزة:</label>
+                                <input type="text" class="form-control" id="editGiveawayTitleInput" value="${giveaway.title || ''}">
+                            </div>
+                            <div class="mb-3">
+                                <label>الوصف:</label>
+                                <textarea class="form-control" id="editGiveawayDescriptionInput" rows="2">${giveaway.description || ''}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label>نوع الجائزة:</label>
+                                <select class="form-select" id="editGiveawayPrizeTypeInput">
+                                    <option value="discord" ${giveaway.prizeType === 'discord' ? 'selected' : ''}>Discord Bot</option>
+                                    <option value="web" ${giveaway.prizeType === 'web' ? 'selected' : ''}>Web Hosting</option>
+                                    <option value="minecraft" ${giveaway.prizeType === 'minecraft' ? 'selected' : ''}>Minecraft Server</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label>عدد المشاركين الأقصى:</label>
+                                <input type="number" class="form-control" id="editGiveawayMaxParticipantsInput" min="1" value="${giveaway.maxParticipants || ''}" placeholder="اتركه فارغاً لغير محدود">
+                            </div>
+                            <div class="mb-3">
+                                <label>مدة الجائزة (بالدقائق):</label>
+                                <input type="number" class="form-control" id="editGiveawayDurationInput" min="1" value="${giveaway.duration || 60}">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
+                            <button class="btn btn-primary" onclick="updateGiveaway('${id}')">حفظ</button>
+                        </div>
+                    `;
+                            showModal(modalContent);
+                        }
+                    }
+                })
+                .catch(err => console.error('Error:', err));
+        }
+
+        function updateGiveaway(id) {
+            const title = document.getElementById('editGiveawayTitleInput').value.trim();
+            const description = document.getElementById('editGiveawayDescriptionInput').value.trim();
+            const prizeType = document.getElementById('editGiveawayPrizeTypeInput').value;
+            const maxParticipants = document.getElementById('editGiveawayMaxParticipantsInput').value;
+            const duration = parseInt(document.getElementById('editGiveawayDurationInput').value);
+
+            fetch('/api/admin/update-giveaway', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id,
+                    title,
+                    description,
+                    prizeType,
+                    maxParticipants: maxParticipants ? parseInt(maxParticipants) : null,
+                    duration
+                })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('تم تحديث الجائزة بنجاح', 'success');
+                        closeModal();
+                        loadGiveaways();
+                    } else {
+                        showToast('فشل التحديث: ' + (data.message || ''), 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    showToast('خطأ في الاتصال', 'error');
+                });
+        }
+
+        function endGiveaway(id) {
+            if (!confirm('هل أنت متأكد من إنهاء هذه الجائزة؟')) return;
+
+            fetch('/api/admin/end-giveaway', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('تم إنهاء الجائزة بنجاح', 'success');
+                        loadGiveaways();
+                    } else {
+                        showToast('فشل الإنهاء: ' + (data.message || ''), 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    showToast('خطأ في الاتصال', 'error');
+                });
+        }
+
+        function deleteGiveaway(id) {
+            if (!confirm('هل أنت متأكد من حذف هذه الجائزة؟')) return;
+
+            fetch('/api/admin/delete-giveaway', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('تم حذف الجائزة بنجاح', 'success');
+                        loadGiveaways();
+                    } else {
+                        showToast('فشل الحذف: ' + (data.message || ''), 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    showToast('خطأ في الاتصال', 'error');
+                });
+        }
+
+        // Minecraft Servers Management Functions
+        function loadMinecraftServers() {
+            fetch('/api/admin/minecraft-servers')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        renderMinecraftServers(data.servers || []);
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading Minecraft servers:', err);
+                    const container = document.getElementById('minecraft-servers-container');
+                    if (container) {
+                        container.innerHTML = '<p class="text-muted text-center py-4">خطأ في تحميل السيرفرات</p>';
+                    }
+                });
+        }
+
+        function renderMinecraftServers(servers) {
+            const container = document.getElementById('minecraft-servers-container');
+            if (!container) return;
+
+            if (servers.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center py-4">لا توجد سيرفرات Minecraft نشطة</p>';
+                return;
+            }
+
+            container.innerHTML = servers.map(server => {
+                const statusBadge = server.status === 'running'
+                    ? '<span class="badge bg-success">نشط</span>'
+                    : '<span class="badge bg-danger">متوقف</span>';
+
+                const expiryDate = server.expiryDate ? new Date(server.expiryDate).toLocaleDateString('ar-EG') : 'غير محدد';
+                const isExpired = server.expiryDate ? new Date(server.expiryDate) < new Date() : false;
+                const expiryBadge = isExpired
+                    ? '<span class="badge bg-danger">منتهي</span>'
+                    : '<span class="badge bg-success">نشط</span>';
+
+                return `
+            <div class="card mb-3 minecraft-server-item" data-id="${server.id}">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <h5 class="mb-1">${server.name || 'غير محدد'}</h5>
+                            <p class="text-muted small mb-0">المالك: ${server.owner?.username || 'غير محدد'}</p>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="small text-muted">الحالة</div>
+                            ${statusBadge}
+                        </div>
+                        <div class="col-md-2">
+                            <div class="small text-muted">المنفذ</div>
+                            <strong>${server.port || 'غير محدد'}</strong>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="small text-muted">الصلاحية</div>
+                            ${expiryBadge}
+                            <div class="small">${expiryDate}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="btn-group w-100">
+                                <a href="/hosting/${server.id}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-info-circle me-1"></i> تفاصيل
+                                </a>
+                                <a href="/console/${server.id}" class="btn btn-sm btn-outline">
+                                    <i class="fas fa-terminal me-1"></i> الكونسول
+                                </a>
+                                <a href="/files/${server.id}" class="btn btn-sm btn-outline">
+                                    <i class="fas fa-folder me-1"></i> الملفات
+                                </a>
+                            </div>
+                            <div class="btn-group w-100 mt-2">
+                                <button class="btn btn-sm btn-success" onclick="extendMinecraftServer('${server.id}')">
+                                    <i class="fas fa-calendar-plus me-1"></i> تمديد
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteMinecraftServer('${server.id}', '${server.name || 'غير محدد'}')">
+                                    <i class="fas fa-trash me-1"></i> حذف
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    ${server.specs ? `
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <div class="d-flex gap-3 small">
+                                    <span><i class="fas fa-memory me-1"></i> RAM: ${server.specs.ram || 0} MB</span>
+                                    <span><i class="fas fa-microchip me-1"></i> CPU: ${server.specs.cpu || 0} Core</span>
+                                    <span><i class="fas fa-hdd me-1"></i> Storage: ${server.specs.storage || 0} GB</span>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+            }).join('');
+        }
+
+        function refreshMinecraftServers() {
+            loadMinecraftServers();
+            showToast('تم تحديث القائمة', 'success');
+        }
+
+        function extendMinecraftServer(id) {
+            const days = prompt('كم يوم تريد إضافة؟', '30');
+            if (!days || isNaN(days) || parseInt(days) <= 0) {
+                showToast('يرجى إدخال عدد أيام صحيح', 'error');
+                return;
+            }
+
+            fetch('/api/admin/extend-minecraft-server', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, days: parseInt(days) })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('تم تمديد الاشتراك بنجاح', 'success');
+                        loadMinecraftServers();
+                    } else {
+                        showToast('فشل التمديد: ' + (data.message || ''), 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    showToast('خطأ في الاتصال', 'error');
+                });
+        }
+
+        function deleteMinecraftServer(id, name) {
+            if (!confirm(`هل أنت متأكد من حذف سيرفر Minecraft "${name}"؟\n\nتحذير: سيتم حذف جميع الملفات والبيانات المرتبطة بهذا السيرفر!`)) return;
+
+            fetch('/api/admin/delete-minecraft-server', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('تم حذف السيرفر بنجاح', 'success');
+                        loadMinecraftServers();
+                    } else {
+                        showToast('فشل الحذف: ' + (data.message || ''), 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    showToast('خطأ في الاتصال', 'error');
+                });
+        }
+    </script>

@@ -1,0 +1,411 @@
+<link rel="stylesheet" href="/css/notifications.css">
+
+<div class="notifications-dropdown">
+    <button class="notifications-toggle" id="notifications-toggle" aria-label="الإشعارات">
+        <i class="fas fa-bell"></i>
+        <% if (notifications && notifications.filter(n => !n.read).length > 0) { %>
+            <span class="notifications-badge"><%= notifications.filter(n => !n.read).length %></span>
+        <% } %>
+    </button>
+    
+    <div class="notifications-menu" id="notifications-menu">
+        <div class="notifications-header">
+            <h4><i class="fas fa-bell me-2"></i> الإشعارات</h4>
+            <div class="notifications-actions">
+                <button id="mark-all-read">تعليم الكل كمقروء</button>
+            </div>
+        </div>
+        
+        <div id="notifications-list-container">
+            <% if (notifications && notifications.length > 0) { %>
+                <ul class="notifications-list">
+                    <% notifications.slice(0, 10).forEach(notification => { %>
+                        <li class="notification-item <%= notification.read ? '' : 'unread' %>" data-id="<%= notification._id || notification.id %>" onclick="handleNotificationClick('<%= notification._id || notification.id %>', '<%= notification.link || '#' %>')" style="pointer-events: none; opacity: 0.7;" class="disabled">
+                            <div class="notification-content">
+                                <div class="notification-icon <%= notification.type || 'info' %>">
+                                    <i class="fas <%= 
+                                        notification.type === 'ticket' ? 'fa-ticket-alt' : 
+                                        notification.type === 'message' ? 'fa-comment' : 
+                                        notification.type === 'warning' ? 'fa-exclamation-triangle' : 
+                                        notification.type === 'success' ? 'fa-check-circle' :
+                                        notification.type === 'error' ? 'fa-times-circle' :
+                                        notification.type === 'announcement' ? 'fa-bullhorn' :
+                                        'fa-info-circle' 
+                                    %>"></i>
+                                </div>
+                                <div class="notification-body">
+                                    <h5 class="notification-title"><%= notification.title %></h5>
+                                    <p class="notification-text"><%= notification.message %></p>
+                                    <div class="notification-time"><%= formatTimeAgo(notification.createdAt || notification.timestamp) %></div>
+                                </div>
+                                <% if (!notification.read) { %>
+                                    <div class="notification-unread-dot"></div>
+                                <% } %>
+                            </div>
+                        </li>
+                    <% }) %>
+                </ul>
+            <% } else { %>
+                <div class="notifications-empty">
+                    <i class="fas fa-bell-slash"></i>
+                    <p>لا توجد إشعارات</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<script>
+// Helper function to format time ago
+function formatTimeAgo(timestamp) {
+    const now = new Date();
+    const date = new Date(timestamp);
+    const seconds = Math.floor((now - date) / 1000);
+    
+    let interval = Math.floor(seconds / 31536000);
+    if (interval >= 1) {
+        return interval + ' سنة' + (interval > 1 ? '' : '');
+    }
+    
+    interval = Math.floor(seconds / 2592000);
+    if (interval >= 1) {
+        return interval + ' شهر' + (interval > 1 ? '' : '');
+    }
+    
+    interval = Math.floor(seconds / 86400);
+    if (interval >= 1) {
+        return interval + ' يوم' + (interval > 1 ? '' : '');
+    }
+    
+    interval = Math.floor(seconds / 3600);
+    if (interval >= 1) {
+        return interval + ' ساعة' + (interval > 1 ? '' : '');
+    }
+    
+    interval = Math.floor(seconds / 60);
+    if (interval >= 1) {
+        return interval + ' دقيقة' + (interval > 1 ? '' : '');
+    }
+    
+    return 'الآن';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const notificationsToggle = document.getElementById('notifications-toggle');
+    const notificationsMenu = document.getElementById('notifications-menu');
+    const markAllReadBtn = document.getElementById('mark-all-read');
+    
+    // Initially enable all notifications (menu is closed by default)
+    const initialNotifications = document.querySelectorAll('.notification-item');
+    initialNotifications.forEach(item => {
+        item.style.pointerEvents = 'auto';
+        item.style.opacity = '1';
+        item.classList.remove('disabled');
+    });
+    
+    // Toggle notifications menu
+    notificationsToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = notificationsMenu.classList.contains('show');
+        notificationsMenu.classList.toggle('show');
+        
+        // Disable/enable notification clicks based on menu state
+        setTimeout(() => {
+            const notificationItems = document.querySelectorAll('.notification-item');
+            notificationItems.forEach(item => {
+                if (isOpen) {
+                    // Menu is closing, enable clicks
+                    item.style.pointerEvents = 'auto';
+                    item.style.opacity = '1';
+                    item.classList.remove('disabled');
+                } else {
+                    // Menu is opening, disable clicks
+                    item.style.pointerEvents = 'none';
+                    item.style.opacity = '0.7';
+                    item.classList.add('disabled');
+                }
+            });
+        }, 50);
+    });
+    
+    // Close notifications menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!notificationsMenu.contains(e.target) && e.target !== notificationsToggle) {
+            notificationsMenu.classList.remove('show');
+            
+            // Re-enable notification clicks when menu closes
+            const notificationItems = document.querySelectorAll('.notification-item');
+            notificationItems.forEach(item => {
+                item.style.pointerEvents = 'auto';
+                item.style.opacity = '1';
+            });
+        }
+    });
+    
+    // Mark all notifications as read
+    markAllReadBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        
+        fetch('/api/notifications/read', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id: 'all' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update UI
+                document.querySelectorAll('.notification-item').forEach(item => {
+                    item.classList.remove('unread');
+                    item.querySelector('.notification-unread-dot')?.remove();
+                });
+                
+                // Remove badge
+                const badge = document.querySelector('.notifications-badge');
+                if (badge) badge.remove();
+            }
+        })
+        .catch(error => console.error('Error marking notifications as read:', error));
+    });
+    
+    // Handle notification click
+    window.handleNotificationClick = function(id, link) {
+        // Check if menu is open and prevent click if so
+        const isMenuOpen = notificationsMenu.classList.contains('show');
+        if (isMenuOpen) {
+            console.log('Notifications menu is open, click blocked');
+            return false;
+        }
+        
+        // Check if notification is disabled
+        const notificationItem = document.querySelector(`.notification-item[data-id="${id}"]`);
+        if (notificationItem && notificationItem.classList.contains('disabled')) {
+            console.log('Notification is disabled, click blocked');
+            return false;
+        }
+        
+        // Mark as read
+        fetch('/api/notifications/read', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update UI for this notification
+                if (notificationItem) {
+                    notificationItem.classList.remove('unread');
+                    notificationItem.querySelector('.notification-unread-dot')?.remove();
+                }
+                
+                // Update badge count
+                const unreadCount = document.querySelectorAll('.notification-item.unread').length;
+                const badge = document.querySelector('.notifications-badge');
+                
+                if (unreadCount === 0 && badge) {
+                    badge.remove();
+                } else if (badge) {
+                    badge.textContent = unreadCount;
+                }
+                
+                // Navigate to the link
+                if (link && link !== '#') {
+                    window.location.href = link;
+                }
+            }
+        })
+        .catch(error => console.error('Error marking notification as read:', error));
+    };
+    
+    // Auto-refresh notifications every 30 seconds
+    setInterval(async function() {
+        try {
+            const response = await fetch('/api/notifications');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    updateNotificationsList(data.notifications);
+                }
+            }
+        } catch (error) {
+            console.error('Error refreshing notifications:', error);
+        }
+    }, 30000);
+    
+    // Listen for new notifications via Socket.IO
+    if (typeof io !== 'undefined') {
+        const socket = io();
+        const userId = '<%= user?._id || user?.id %>';
+        
+        if (userId) {
+            socket.emit('join-user', userId);
+            
+            socket.on('new-notification', function(notification) {
+                console.log('New notification received:', notification);
+                
+                // Update badge count
+                let badge = document.querySelector('.notifications-badge');
+                const unreadCount = (parseInt(badge?.textContent || '0')) + 1;
+                
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'notifications-badge';
+                    notificationsToggle.appendChild(badge);
+                }
+                
+                badge.textContent = unreadCount;
+                
+                // Add notification to list
+                const notificationsList = document.querySelector('.notifications-list');
+                if (notificationsList) {
+                    const notificationItem = document.createElement('li');
+                    notificationItem.className = 'notification-item unread';
+                    notificationItem.setAttribute('data-id', notification.id);
+                    
+                    // Check if menu is open and disable clicks accordingly
+                    const isMenuOpen = notificationsMenu.classList.contains('show');
+                    if (isMenuOpen) {
+                        notificationItem.style.pointerEvents = 'none';
+                        notificationItem.style.opacity = '0.7';
+                        notificationItem.classList.add('disabled');
+                    }
+                    
+                    notificationItem.onclick = function() {
+                        handleNotificationClick(notification.id, notification.link || '#');
+                    };
+                    
+                    const iconClass = notification.type === 'ticket' ? 'fa-ticket-alt' : 
+                                     notification.type === 'message' ? 'fa-comment' : 
+                                     notification.type === 'warning' ? 'fa-exclamation-triangle' : 
+                                     notification.type === 'success' ? 'fa-check-circle' :
+                                     notification.type === 'error' ? 'fa-times-circle' :
+                                     notification.type === 'announcement' ? 'fa-bullhorn' :
+                                     'fa-info-circle';
+                    
+                    notificationItem.innerHTML = `
+                        <div class="notification-content">
+                            <div class="notification-icon ${notification.type || 'info'}">
+                                <i class="fas ${iconClass}"></i>
+                            </div>
+                            <div class="notification-body">
+                                <h5 class="notification-title">${notification.title}</h5>
+                                <p class="notification-text">${notification.message}</p>
+                                <div class="notification-time">الآن</div>
+                            </div>
+                            <div class="notification-unread-dot"></div>
+                        </div>
+                    `;
+                    
+                    // Add at the beginning of the list
+                    notificationsList.insertBefore(notificationItem, notificationsList.firstChild);
+                    
+                    // Remove empty message if it exists
+                    const emptyMessage = document.querySelector('.notifications-empty');
+                    if (emptyMessage) {
+                        emptyMessage.remove();
+                    }
+                    
+                    // Show a toast notification
+                    if (typeof showToast === 'function') {
+                        showToast(notification.title, 'info');
+                    }
+                }
+            });
+        }
+    }
+    
+    // Function to update notifications list
+    function updateNotificationsList(notifications) {
+        const notificationsList = document.querySelector('.notifications-list');
+        const notificationsContainer = document.getElementById('notifications-list-container');
+        const badge = document.querySelector('.notifications-badge');
+        
+        if (!notifications || notifications.length === 0) {
+            if (notificationsList) {
+                notificationsList.innerHTML = '';
+            }
+            if (notificationsContainer) {
+                notificationsContainer.innerHTML = `
+                    <div class="notifications-empty">
+                        <i class="fas fa-bell-slash"></i>
+                        <p>لا توجد إشعارات</p>
+                    </div>
+                `;
+            }
+            if (badge) badge.remove();
+            return;
+        }
+        
+        // Update badge count
+        const unreadCount = notifications.filter(n => !n.read).length;
+        if (unreadCount > 0) {
+            if (!badge) {
+                const newBadge = document.createElement('span');
+                newBadge.className = 'notifications-badge';
+                notificationsToggle.appendChild(newBadge);
+            }
+            const currentBadge = document.querySelector('.notifications-badge');
+            if (currentBadge) currentBadge.textContent = unreadCount;
+        } else if (badge) {
+            badge.remove();
+        }
+        
+        // Update notifications list
+        if (notificationsList) {
+            notificationsList.innerHTML = '';
+            notifications.slice(0, 10).forEach(notification => {
+                const notificationItem = document.createElement('li');
+                notificationItem.className = `notification-item ${notification.read ? '' : 'unread'}`;
+                notificationItem.setAttribute('data-id', notification.id);
+                
+                // Check if menu is open and disable clicks accordingly
+                const isMenuOpen = notificationsMenu.classList.contains('show');
+                if (isMenuOpen) {
+                    notificationItem.style.pointerEvents = 'none';
+                    notificationItem.style.opacity = '0.7';
+                    notificationItem.classList.add('disabled');
+                }
+                
+                notificationItem.onclick = function() {
+                    handleNotificationClick(notification.id, notification.link || '#');
+                };
+                
+                const iconClass = notification.type === 'ticket' ? 'fa-ticket-alt' : 
+                                 notification.type === 'message' ? 'fa-comment' : 
+                                 notification.type === 'warning' ? 'fa-exclamation-triangle' : 
+                                 notification.type === 'success' ? 'fa-check-circle' :
+                                 notification.type === 'error' ? 'fa-times-circle' :
+                                 notification.type === 'announcement' ? 'fa-bullhorn' :
+                                 'fa-info-circle';
+                
+                notificationItem.innerHTML = `
+                    <div class="notification-content">
+                        <div class="notification-icon ${notification.type || 'info'}">
+                            <i class="fas ${iconClass}"></i>
+                        </div>
+                        <div class="notification-body">
+                            <h5 class="notification-title">${notification.title}</h5>
+                            <p class="notification-text">${notification.message}</p>
+                            <div class="notification-time">${formatTimeAgo(notification.timestamp)}</div>
+                        </div>
+                        ${!notification.read ? '<div class="notification-unread-dot"></div>' : ''}
+                    </div>
+                `;
+                
+                notificationsList.appendChild(notificationItem);
+            });
+        }
+        
+        // Remove empty message if it exists
+        const emptyMessage = document.querySelector('.notifications-empty');
+        if (emptyMessage && notifications.length > 0) {
+            emptyMessage.remove();
+        }
+    }
+});
+</script>

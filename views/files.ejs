@@ -1,0 +1,1465 @@
+<div class="file-manager-page fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="slide-up"><i class="fas fa-folder me-2"></i> إدارة الملفات - <%= hosting.name %></h2>
+        <div class="slide-up" style="animation-delay: 0.1s;">
+            <a href="/hosting/<%= hosting.id %>" class="btn btn-primary">
+                <i class="fas fa-cog me-1"></i> لوحة التحكم
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-3-1 slide-up" style="animation-delay: 0.2s;">
+        <div>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <button id="back-button" class="btn btn-outline-secondary btn-sm" title="الرجوع للمجلد السابق" style="display: none;">
+                                <i class="fas fa-arrow-left me-1"></i> رجوع
+                            </button>
+                            <h4 class="mb-0"><i class="fas fa-folder me-1"></i> مستكشف الملفات</h4>
+                        </div>
+                        <div class="file-path-badge" id="current-path">/</div>
+                        <div class="breadcrumb-path" id="breadcrumb-path" style="display: none;"></div>
+                    </div>
+                </div>
+                <div class="file-explorer-wrapper">
+                    <div class="file-list-header">
+                        <div><input type="checkbox" id="select-all" class="file-checkbox" title="تحديد الكل"></div>
+                        <div>الاسم</div>
+                        <div class="file-size">الحجم</div>
+                        <div class="file-date">آخر تعديل</div>
+                        <div>إجراءات</div>
+                    </div>
+                    <div id="file-explorer" class="file-explorer" data-host-id="<%= hosting.id %>">
+                        <div class="file-explorer-loading">
+                            <div class="spinner"></div>
+                            <p>جاري تحميل الملفات...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="file-actions">
+                        <button id="new-folder" class="btn btn-sm">
+                            <i class="fas fa-folder-plus me-1"></i> مجلد جديد
+                        </button>
+                        <button id="new-file" class="btn btn-sm">
+                            <i class="fas fa-file-circle-plus me-1"></i> ملف جديد
+                        </button>
+                        <button id="new-node-app" class="btn btn-sm">
+                            <i class="fas fa-bolt me-1"></i> مشروع Node.js
+                        </button>
+                        <button id="upload-file" class="btn btn-sm">
+                            <i class="fas fa-upload me-1"></i> رفع ملف
+                        </button>
+                        <button id="extract-zip" class="btn btn-sm">
+                            <i class="fas fa-file-archive me-1"></i> استخراج ZIP
+                        </button>
+                        <button id="clean-node-modules" class="btn btn-sm btn-warning">
+                            <i class="fas fa-broom me-1"></i> تنظيف node_modules
+                        </button>
+                    </div>
+                    <div id="selection-actions" class="selection-actions">
+                        <div class="selected-count">0 محدد</div>
+                        <div class="d-flex gap-2">
+                            <button id="move-selected" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrows-alt"></i> نقل</button>
+                            <button id="delete-selected" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> حذف</button>
+                        </div>
+                    </div>
+                    <input type="file" id="file-upload" multiple style="display: none;">
+                    <input type="file" id="zip-upload" accept=".zip,.rar,.7z,.tar,.gz" style="display: none;">
+                </div>
+            </div>
+            
+            <div id="file-editor" class="card mb-4" style="display: none;">
+                <div class="editor-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-file-code text-muted"></i>
+                        <strong id="file-name">untitled.txt</strong>
+                        <span id="editor-path" class="editor-path"></span>
+                    </div>
+                    <div class="editor-actions">
+                        <button id="save-file" class="btn btn-primary btn-sm">
+                            <i class="fas fa-save me-1"></i> حفظ
+                        </button>
+                        <button id="close-editor" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-times me-1"></i> إغلاق
+                        </button>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea id="file-content" class="file-editor" spellcheck="false"></textarea>
+                </div>
+                <div class="editor-footer">
+                    <div class="editor-status" id="editor-status">جاهز</div>
+                    <div class="editor-shortcuts">
+                        <span class="kbd">Ctrl</span> + <span class="kbd">S</span> للحفظ
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-info-circle me-1"></i> معلومات الاستضافة</h4>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <div class="info-label">اسم الاستضافة</div>
+                        <div><%= hosting.name %></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">الحالة</div>
+                        <div>
+                            <span class="badge <%= hosting.status === 'running' ? 'bg-success' : 'bg-danger' %>">
+                                <%= hosting.status === 'running' ? 'نشط' : 'متوقف' %>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">المساحة المستخدمة</div>
+                        <div><%= hosting.usedStorage || '0 KB' %></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">الملف الرئيسي</div>
+                        <div class="main-file-container">
+                            <div class="main-file-display">
+                                <i class="fas fa-file-code main-file-icon"></i>
+                                <span id="main-file-name" class="main-file-name"><%= hosting.mainFile || 'index.js' %></span>
+                            </div>
+                            <button id="change-main-file" class="btn-change-main-file" title="تغيير الملف الرئيسي">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileExplorer = document.getElementById('file-explorer');
+        const hostId = fileExplorer.dataset.hostId;
+        const currentPath = document.getElementById('current-path');
+        let selectedFile = null;
+        let selectedItems = new Set();
+        let previousPath = null; // متغير لتتبع المسار السابق
+        
+        let socket = io();
+        
+        // Connect to socket.io
+        socket.on('connect', function() {
+            console.log('Connected to socket.io server');
+            socket.emit('get-files', { hostId, path: '/' });
+        });
+        
+        // Handle file list response
+        socket.on('file-list', function(data) {
+            renderFileExplorer(data.files, data.path);
+            updateBackButton(data.path);
+        });
+        
+        // Render file explorer
+        function renderFileExplorer(files, path) {
+            fileExplorer.innerHTML = '';
+            currentPath.textContent = path || '/';
+            
+            if (path !== '/') {
+                const backItem = document.createElement('div');
+                backItem.className = 'file-item';
+                backItem.innerHTML = `
+                    <div><input type="checkbox" disabled class="file-checkbox"></div>
+                    <div class="file-icon folder"><i class="fas fa-arrow-up"></i></div>
+                    <div class="file-name">..</div>
+                    <div class="file-size"></div>
+                    <div class="file-date"></div>
+                    <div class="file-actions"></div>
+                `;
+                backItem.addEventListener('click', () => {
+                    const parentPath = path.split('/').slice(0, -1).join('/') || '/';
+                    // حفظ المسار الحالي كمسار سابق
+                    previousPath = path;
+                    socket.emit('get-files', { hostId, path: parentPath });
+                    updateBackButton(parentPath);
+                });
+                fileExplorer.appendChild(backItem);
+            }
+            
+            // Sort files: folders first, then files
+            files.sort((a, b) => {
+                if (a.type === 'directory' && b.type !== 'directory') return -1;
+                if (a.type !== 'directory' && b.type === 'directory') return 1;
+                return a.name.localeCompare(b.name);
+            });
+            
+            files.forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.dataset.name = file.name;
+                fileItem.dataset.type = file.type;
+                
+                const isFolder = file.type === 'directory';
+                const icon = isFolder ? 'fa-folder' : getFileIcon(file.name);
+                const iconClass = isFolder ? 'folder' : (file.name === 'config.json' ? 'config-file' : 'file');
+                
+                fileItem.innerHTML = `
+                    <div><input type="checkbox" class="file-checkbox" data-name="${file.name}"></div>
+                    <div class="file-icon ${iconClass}"><i class="fas ${icon}"></i></div>
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-size">${formatSize(file.size)}</div>
+                    <div class="file-date">${formatDate(file.modified)}</div>
+                    <div class="file-actions">
+                        <div class="file-actions-menu">
+                            <button class="file-action-menu-btn" title="المزيد من الإجراءات">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="file-actions-dropdown">
+                                <button class="file-action-item" data-action="rename" title="تغيير الاسم">
+                                    <i class="fas fa-edit"></i> تغيير الاسم
+                                </button>
+                                <button class="file-action-item" data-action="edit" title="تعديل الكود">
+                                    <i class="fas fa-code"></i> تعديل الكود
+                                </button>
+                                ${isCompressedFile(file.name) ? `
+                                <button class="file-action-item" data-action="extract" title="فك ضغط الملف">
+                                    <i class="fas fa-file-archive"></i> فك ضغط الملف
+                                </button>
+                                ` : ''}
+                                <button class="file-action-item" data-action="delete" title="حذف الملف">
+                                    <i class="fas fa-trash"></i> حذف الملف
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                fileItem.addEventListener('click', (e) => {
+                    // منع إغلاق القائمة عند النقر عليها
+                    if (e.target.closest('.file-actions-menu')) {
+                        e.stopPropagation();
+                        return;
+                    }
+                    
+                    if (e.target.closest('.file-checkbox')) {
+                        toggleSelection(fileItem, file.name);
+                    } else {
+                        if (isFolder) {
+                            const newPath = path === '/' ? `/${file.name}` : `${path}/${file.name}`;
+                            // حفظ المسار الحالي كمسار سابق
+                            previousPath = path;
+                            socket.emit('get-files', { hostId, path: newPath });
+                            updateBackButton(newPath);
+                        } else {
+                            openFile(path, file.name);
+                        }
+                    }
+                });
+                
+                // معالج قائمة الإجراءات
+                const menuBtn = fileItem.querySelector('.file-action-menu-btn');
+                const dropdown = fileItem.querySelector('.file-actions-dropdown');
+                
+                menuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    
+                    // إغلاق جميع القوائم الأخرى
+                    document.querySelectorAll('.file-actions-dropdown').forEach(menu => {
+                        if (menu !== dropdown) {
+                            menu.classList.remove('show');
+                        }
+                    });
+                    
+                    // تبديل القائمة الحالية
+                    dropdown.classList.toggle('show');
+                });
+                
+                // معالج عناصر القائمة
+                dropdown.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    
+                    // البحث عن العنصر الذي يحتوي على data-action
+                    let actionElement = e.target;
+                    while (actionElement && !actionElement.dataset.action) {
+                        actionElement = actionElement.parentElement;
+                    }
+                    
+                    if (actionElement && actionElement.dataset.action) {
+                        const action = actionElement.dataset.action;
+                        dropdown.classList.remove('show');
+                        
+                        console.log(`🔧 تنفيذ الإجراء: ${action} للملف: ${file.name}`);
+                        
+                        switch (action) {
+                            case 'rename':
+                                renameFile(path, file.name, isFolder);
+                                break;
+                            case 'edit':
+                                if (!isFolder) {
+                                    openFile(path, file.name);
+                                } else {
+                                    showToast('لا يمكن تعديل المجلدات', 'warning');
+                                }
+                                break;
+                            case 'extract':
+                                if (!isFolder && isCompressedFile(file.name)) {
+                                    extractFile(path, file.name);
+                                } else {
+                                    showToast('هذا الملف ليس ملف مضغوط', 'warning');
+                                }
+                                break;
+                            case 'delete':
+                                deleteFile(path, file.name, isFolder);
+                                break;
+                        }
+                    }
+                });
+                
+                const checkbox = fileItem.querySelector('.file-checkbox');
+                checkbox.addEventListener('change', (ev) => {
+                    ev.stopPropagation();
+                    toggleSelection(fileItem, file.name);
+                });
+                
+                fileExplorer.appendChild(fileItem);
+            });
+            updateSelectionBar();
+            
+            // إغلاق جميع القوائم المنسدلة عند تحميل الملفات
+            closeAllDropdowns();
+        }
+
+        // Format helpers
+        function formatSize(bytes) {
+            if (bytes === undefined || bytes === null) return '';
+            const units = ['B','KB','MB','GB'];
+            let i = 0; let v = bytes;
+            while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+            return v.toFixed( (i===0) ? 0 : 1 ) + ' ' + units[i];
+        }
+        function formatDate(d) {
+            try { return new Date(d).toLocaleString('ar-EG'); } catch { return ''; }
+        }
+        
+        // Get file icon based on extension
+        function getFileIcon(fileName) {
+            // أيقونة خاصة لملف config.json
+            if (fileName === 'config.json') {
+                return 'fa-cog';
+            }
+            
+            const extension = fileName.split('.').pop().toLowerCase();
+            
+            const iconMap = {
+                'js': 'fa-js',
+                'json': 'fa-code',
+                'html': 'fa-html5',
+                'css': 'fa-css3',
+                'png': 'fa-image',
+                'jpg': 'fa-image',
+                'jpeg': 'fa-image',
+                'gif': 'fa-image',
+                'svg': 'fa-image',
+                'pdf': 'fa-file-pdf',
+                'zip': 'fa-file-archive',
+                'rar': 'fa-file-archive',
+                '7z': 'fa-file-archive',
+                'tar': 'fa-file-archive',
+                'gz': 'fa-file-archive',
+                'txt': 'fa-file-alt',
+                'md': 'fa-file-alt',
+                'exe': 'fa-file-code',
+                'bat': 'fa-file-code'
+            };
+            
+            return iconMap[extension] || 'fa-file';
+        }
+        
+        // Check if file is compressed
+        function isCompressedFile(fileName) {
+            const extension = fileName.split('.').pop().toLowerCase();
+            const compressedExtensions = ['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz'];
+            return compressedExtensions.includes(extension);
+        }
+        
+        // Open file in editor
+        function openFile(path, name) {
+            const filePath = path === '/' ? `/${name}` : `${path}/${name}`;
+            socket.emit('read-file', { hostId, path: filePath });
+            
+            socket.on('file-content', (data) => {
+                const editor = document.getElementById('file-editor');
+                editor.style.display = 'block';
+                document.getElementById('file-name').textContent = name;
+                document.getElementById('editor-path').textContent = filePath;
+                const textarea = document.getElementById('file-content');
+                textarea.value = data.content;
+                const status = document.getElementById('editor-status');
+                status.textContent = 'جاهز';
+                status.className = 'editor-status';
+                selectedFile = filePath;
+            });
+        }
+        
+        // Rename file or folder
+        function renameFile(path, name, isFolder) {
+            if (confirm(`هل تريد إعادة تسمية ${isFolder ? 'المجلد' : 'الملف'} "${name}"؟`)) {
+                const newName = prompt(`أدخل اسمًا جديدًا لـ ${isFolder ? 'المجلد' : 'الملف'}:`, name);
+                
+                if (newName && newName !== name) {
+                    const oldPath = path === '/' ? `/${name}` : `${path}/${name}`;
+                    const newPath = path === '/' ? `/${newName}` : `${path}/${newName}`;
+                    
+                    socket.emit('rename', {
+                        hostId,
+                        oldPath,
+                        newPath
+                    });
+                }
+            }
+        }
+        
+        // Selection handling
+        const selectionBar = document.getElementById('selection-actions');
+        const selectAll = document.getElementById('select-all');
+        selectAll.addEventListener('change', () => {
+            const checkboxes = fileExplorer.querySelectorAll('.file-checkbox:not([disabled])');
+            selectedItems.clear();
+            checkboxes.forEach(cb => {
+                cb.checked = selectAll.checked;
+                if (cb.checked) selectedItems.add(cb.dataset.name);
+                cb.closest('.file-item').classList.toggle('selected', cb.checked);
+            });
+            updateSelectionBar();
+        });
+
+        function toggleSelection(fileItem, name) {
+            const checkbox = fileItem.querySelector('.file-checkbox');
+            const checked = checkbox.checked;
+            if (checked) selectedItems.add(name); else selectedItems.delete(name);
+            fileItem.classList.toggle('selected', checked);
+            updateSelectionBar();
+        }
+
+        function updateSelectionBar() {
+            const count = selectedItems.size;
+            if (count > 0) {
+                selectionBar.classList.add('active');
+                selectionBar.querySelector('.selected-count').textContent = `${count} محدد`;
+            } else {
+                selectionBar.classList.remove('active');
+                selectionBar.querySelector('.selected-count').textContent = '0 محدد';
+                selectAll.checked = false;
+            }
+        }
+        
+        // Update back button visibility
+        function updateBackButton(newPath) {
+            const backButton = document.getElementById('back-button');
+            const breadcrumbPath = document.getElementById('breadcrumb-path');
+            const currentPathBadge = document.getElementById('current-path');
+            
+            // إظهار زر الرجوع فقط إذا لم نكن في المجلد الجذر
+            if (newPath !== '/') {
+                backButton.style.display = 'inline-block';
+                // تحديث tooltip زر الرجوع
+                if (previousPath) {
+                    backButton.title = `الرجوع إلى: ${previousPath}`;
+                }
+                // إظهار breadcrumb للمسارات المعقدة
+                if (newPath.split('/').length > 3) {
+                    currentPathBadge.style.display = 'none';
+                    breadcrumbPath.style.display = 'block';
+                    updateBreadcrumb(newPath);
+                } else {
+                    currentPathBadge.style.display = 'block';
+                    breadcrumbPath.style.display = 'none';
+                }
+            } else {
+                backButton.style.display = 'none';
+                currentPathBadge.style.display = 'block';
+                breadcrumbPath.style.display = 'none';
+            }
+        }
+        
+        // Update breadcrumb navigation
+        function updateBreadcrumb(path) {
+            const breadcrumbPath = document.getElementById('breadcrumb-path');
+            const pathParts = path.split('/').filter(part => part !== '');
+            
+            let breadcrumbHTML = '<span class="breadcrumb-item" data-path="/">🏠</span>';
+            let currentPath = '';
+            
+            pathParts.forEach((part, index) => {
+                currentPath += '/' + part;
+                const isLast = index === pathParts.length - 1;
+                breadcrumbHTML += ` <i class="fas fa-chevron-right text-muted mx-1"></i> `;
+                breadcrumbHTML += `<span class="breadcrumb-item ${isLast ? 'active' : ''}" data-path="${currentPath}">${part}</span>`;
+            });
+            
+            breadcrumbPath.innerHTML = breadcrumbHTML;
+            
+            // إضافة معالجات النقر
+            breadcrumbPath.querySelectorAll('.breadcrumb-item').forEach(item => {
+                if (!item.classList.contains('active')) {
+                    item.style.cursor = 'pointer';
+                    item.addEventListener('click', () => {
+                        const targetPath = item.dataset.path;
+                        previousPath = path;
+                        socket.emit('get-files', { hostId, path: targetPath });
+                        updateBackButton(targetPath);
+                    });
+                }
+            });
+        }
+
+        // Delete file or folder
+        function deleteFile(path, name, isFolder) {
+            // منع حذف مجلدات node_modules
+            if (name === 'node_modules' || path.includes('node_modules')) {
+                showToast('لا يمكن حذف مجلد node_modules مباشرة. استخدم "npm install" لإعادة تثبيت المكتبات', 'warning');
+                return;
+            }
+            
+            // تحذير خاص عند حذف config.json
+            let confirmMessage = `هل أنت متأكد من حذف ${isFolder ? 'المجلد' : 'الملف'} "${name}"؟`;
+            if (name === 'config.json') {
+                confirmMessage = `⚠️ تحذير: أنت على وشك حذف ملف config.json!\n\nهذا الملف يحتوي على إعدادات الاستضافة المهمة.\nهل أنت متأكد من المتابعة؟`;
+            }
+            
+            if (confirm(confirmMessage)) {
+                const filePath = path === '/' ? `/${name}` : `${path}/${name}`;
+                
+                socket.emit('delete', {
+                    hostId,
+                    path: filePath,
+                    isDirectory: isFolder
+                });
+            }
+        }
+        
+        // Extract compressed file
+        function extractFile(path, fileName) {
+            if (confirm(`هل تريد فك ضغط الملف "${fileName}"؟`)) {
+                const filePath = path === '/' ? `/${fileName}` : `${path}/${fileName}`;
+                
+                socket.emit('extract-file', {
+                    hostId,
+                    path: filePath,
+                    fileName: fileName
+                });
+                
+                showToast(`جاري فك ضغط ${fileName}...`, 'info');
+            }
+        }
+        
+        // Save file button
+        document.getElementById('save-file').addEventListener('click', () => {
+            if (selectedFile) {
+                const textarea = document.getElementById('file-content');
+                const content = textarea.value;
+                
+                socket.emit('write-file', {
+                    hostId,
+                    path: selectedFile,
+                    content
+                });
+                const status = document.getElementById('editor-status');
+                status.textContent = 'تم الحفظ';
+                status.className = 'editor-status saved';
+                showToast('تم حفظ الملف بنجاح', 'success');
+            }
+        });
+        
+        // New folder button
+        document.getElementById('new-folder').addEventListener('click', () => {
+            const currentPathValue = document.getElementById('current-path').textContent;
+            const folderName = prompt('أدخل اسم المجلد الجديد:');
+            
+            if (folderName) {
+                const folderPath = currentPathValue === '/' ? `/${folderName}` : `${currentPathValue}/${folderName}`;
+                
+                socket.emit('create-folder', {
+                    hostId,
+                    path: folderPath
+                });
+            }
+        });
+        
+        // New file button
+        document.getElementById('new-file').addEventListener('click', () => {
+            const currentPathValue = document.getElementById('current-path').textContent;
+            const fileName = prompt('أدخل اسم الملف الجديد:');
+            
+            if (fileName) {
+                const filePath = currentPathValue === '/' ? `/${fileName}` : `${currentPathValue}/${fileName}`;
+                
+                socket.emit('write-file', {
+                    hostId,
+                    path: filePath,
+                    content: ''
+                });
+                
+                setTimeout(() => {
+                    socket.emit('get-files', { hostId, path: currentPathValue });
+                }, 500);
+            }
+        });
+
+        // New Node.js app scaffold
+        document.getElementById('new-node-app').addEventListener('click', async () => {
+            const currentPathValue = document.getElementById('current-path').textContent;
+            const appName = prompt('اسم مجلد مشروع Node.js (مثلاً: app):', 'app');
+            if (!appName) return;
+            const root = currentPathValue === '/' ? `/${appName}` : `${currentPathValue}/${appName}`;
+            const pkg = {
+                name: appName,
+                version: '1.0.0',
+                private: true,
+                scripts: { start: 'node server.js' },
+                dependencies: {}
+            };
+            const serverJs = `const express = require('express');\nconst app = express();\nconst path = require('path');\napp.use(express.static(path.join(__dirname, 'public')));\napp.get('/health', (req,res)=>res.json({ok:true}));\nconst port = process.env.PORT || 4000;\napp.listen(port, ()=> console.log('Node app on', port));\n`;
+            const indexHtml = `<!doctype html><html lang="ar"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>موقعي</title></head><body><h1 style="font-family: sans-serif;">مرحباً بك في موقع Node.js</h1></body></html>`;
+
+            // create dirs
+            socket.emit('create-folder', { hostId, path: root });
+            socket.emit('create-folder', { hostId, path: `${root}/public` });
+            // write files
+            socket.emit('write-file', { hostId, path: `${root}/package.json`, content: JSON.stringify(pkg, null, 2) });
+            socket.emit('write-file', { hostId, path: `${root}/server.js`, content: serverJs });
+            socket.emit('write-file', { hostId, path: `${root}/public/index.html`, content: indexHtml });
+
+            showToast('تم إنشاء مشروع Node.js مبدئي', 'success');
+            setTimeout(() => { socket.emit('get-files', { hostId, path: currentPathValue }); }, 600);
+        });
+        
+        // Upload file button
+        document.getElementById('upload-file').addEventListener('click', () => {
+            document.getElementById('file-upload').click();
+        });
+        
+        document.getElementById('file-upload').addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+            
+            const currentPathValue = document.getElementById('current-path').textContent;
+            let uploadedCount = 0;
+            let totalFiles = files.length;
+            
+            showToast(`جاري رفع ${totalFiles} ملف...`, 'info');
+            
+            files.forEach((file, index) => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const fileContent = e.target.result;
+                    const filePath = currentPathValue === '/' ? `/${file.name}` : `${currentPathValue}/${file.name}`;
+                    
+                    socket.emit('upload-file', {
+                        hostId,
+                        path: filePath,
+                        content: fileContent,
+                        fileName: file.name,
+                        fileSize: file.size
+                    });
+                    
+                    uploadedCount++;
+                    
+                    if (uploadedCount === totalFiles) {
+                        showToast(`تم رفع ${totalFiles} ملف بنجاح`, 'success');
+                        setTimeout(() => {
+                            socket.emit('get-files', { hostId, path: currentPathValue });
+                        }, 500);
+                    }
+                };
+                
+                reader.readAsDataURL(file);
+            });
+            
+            // إعادة تعيين input
+            e.target.value = '';
+        });
+        
+        // Extract ZIP button
+        document.getElementById('extract-zip').addEventListener('click', () => {
+            document.getElementById('zip-upload').click();
+        });
+        
+        // Clean node_modules button
+        document.getElementById('clean-node-modules').addEventListener('click', () => {
+            if (confirm('هل تريد حذف مجلد node_modules وإعادة تثبيت المكتبات؟\n\nسيتم:\n1. حذف مجلد node_modules\n2. تشغيل npm install لإعادة التثبيت')) {
+                const currentPathValue = document.getElementById('current-path').textContent;
+                
+                // إرسال أمر حذف node_modules بطريقة آمنة
+                socket.emit('clean-node-modules', {
+                    hostId,
+                    path: currentPathValue
+                });
+                
+                showToast('جاري تنظيف node_modules...', 'info');
+            }
+        });
+        
+        // Back button
+        document.getElementById('back-button').addEventListener('click', () => {
+            if (previousPath !== null) {
+                // حفظ المسار الحالي كمسار سابق جديد
+                const currentPathValue = document.getElementById('current-path').textContent;
+                const tempPath = previousPath;
+                previousPath = currentPathValue;
+                
+                // الانتقال للمسار السابق
+                socket.emit('get-files', { hostId, path: tempPath });
+                updateBackButton(tempPath);
+            }
+        });
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            // الرجوع للخلف باستخدام Backspace أو Alt + Left Arrow
+            if ((e.key === 'Backspace' || (e.altKey && e.key === 'ArrowLeft')) && 
+                previousPath !== null && 
+                !e.target.matches('input, textarea, [contenteditable]')) {
+                e.preventDefault();
+                document.getElementById('back-button').click();
+            }
+        });
+        
+        document.getElementById('zip-upload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const currentPathValue = document.getElementById('current-path').textContent;
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const zipContent = e.target.result;
+                    
+                    socket.emit('extract-archive', {
+                        hostId,
+                        path: currentPathValue,
+                        zipContent,
+                        fileName: file.name,
+                        fileSize: file.size
+                    });
+                    
+                    showToast(`جاري استخراج ${file.name}...`, 'info');
+                    
+                    setTimeout(() => {
+                        socket.emit('get-files', { hostId, path: currentPathValue });
+                    }, 2000);
+                };
+                
+                reader.readAsDataURL(file);
+            }
+            
+            // إعادة تعيين input
+            e.target.value = '';
+        });
+        
+        // Socket events
+        socket.on('operation-result', (data) => {
+            showToast(data.message, data.success ? 'success' : 'error');
+            
+            if (data.success) {
+                const currentPathValue = document.getElementById('current-path').textContent;
+                socket.emit('get-files', { hostId, path: currentPathValue });
+            }
+        });
+
+        // تحديث واجهة المستخدم عند تغيير الملف الرئيسي
+        socket.on('main-file-changed', (data) => {
+            document.getElementById('main-file-name').textContent = data.newMainFile;
+            showToast('تم تحديث الملف الرئيسي بنجاح', 'success');
+        });
+
+        // تحديث حالة البوت
+        socket.on('bot-status-changed', (data) => {
+            if (data.hostId === hostId) {
+                const statusBadge = document.querySelector('.badge');
+                if (statusBadge) {
+                    if (data.status === 'running') {
+                        statusBadge.className = 'badge bg-success';
+                        statusBadge.textContent = 'نشط';
+                    } else {
+                        statusBadge.className = 'badge bg-danger';
+                        statusBadge.textContent = 'متوقف';
+                    }
+                }
+                
+                // إظهار رسالة التحديث
+                const statusText = data.status === 'running' ? 'نشط' : 'متوقف';
+                showToast(`تم تحديث حالة البوت إلى: ${statusText}`, 'success');
+            }
+        });
+
+        // Close editor
+        document.getElementById('close-editor').addEventListener('click', () => {
+            document.getElementById('file-editor').style.display = 'none';
+        });
+
+        // Detect unsaved changes
+        const fileContentEl = document.getElementById('file-content');
+        fileContentEl.addEventListener('input', () => {
+            const status = document.getElementById('editor-status');
+            status.textContent = 'غير محفوظ';
+            status.className = 'editor-status unsaved';
+        });
+
+        // Keyboard shortcut Ctrl+S to save
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                document.getElementById('save-file').click();
+            }
+        });
+
+        // Change main file button
+        document.getElementById('change-main-file').addEventListener('click', () => {
+            const currentMainFile = document.getElementById('main-file-name').textContent;
+            showMainFileModal(currentMainFile);
+        });
+
+        // دالة عرض modal تغيير الملف الرئيسي - طريقة مبسطة
+        function showMainFileModal(currentFile) {
+            // إنشاء النافذة المنبثقة بطريقة مختلفة تماماً
+            const modalHTML = `
+                <div id="main-file-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+                    <div style="background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; min-width: 400px; max-width: 500px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #30363d; padding-bottom: 10px;">
+                            <h3 style="color: #c9d1d9; margin: 0;"><i class="fas fa-edit"></i> تغيير الملف الرئيسي</h3>
+                            <button id="close-main-file-modal" style="background: none; border: none; color: #c9d1d9; font-size: 20px; cursor: pointer;">&times;</button>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; color: #c9d1d9; margin-bottom: 8px;">اسم الملف الرئيسي الجديد:</label>
+                            <input type="text" id="new-main-file-input" style="width: 100%; padding: 10px; background: #21262d; border: 1px solid #30363d; border-radius: 4px; color: #c9d1d9; font-size: 14px;" value="${currentFile}" placeholder="أدخل اسم الملف الرئيسي">
+                            <small style="color: #8b949e; font-size: 12px; margin-top: 5px; display: block;">يجب أن يكون الملف من نوع .js أو .mjs أو .ts</small>
+                        </div>
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <button id="save-main-file-btn" style="background: #58a6ff; color: #0d1117; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">حفظ التغيير</button>
+                            <button id="cancel-main-file-btn" style="background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 10px 20px; border-radius: 4px; cursor: pointer;">إلغاء</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // إضافة النافذة إلى الصفحة
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            const modal = document.getElementById('main-file-modal');
+            const input = document.getElementById('new-main-file-input');
+            const saveBtn = document.getElementById('save-main-file-btn');
+            const cancelBtn = document.getElementById('cancel-main-file-btn');
+            const closeBtn = document.getElementById('close-main-file-modal');
+            
+            // Focus على الحقل
+            setTimeout(() => {
+                input.focus();
+                input.select();
+            }, 100);
+            
+            function closeModal() {
+                if (modal && modal.parentNode) {
+                    modal.remove();
+                }
+            }
+            
+            // Event listeners
+            closeBtn.onclick = closeModal;
+            cancelBtn.onclick = closeModal;
+            
+            saveBtn.onclick = function() {
+                const newMainFile = input.value.trim();
+                if (newMainFile && newMainFile !== currentFile) {
+                    // التحقق من أن الملف له امتداد صالح
+                    const ext = newMainFile.split('.').pop().toLowerCase();
+                    if (!['js', 'mjs', 'ts'].includes(ext)) {
+                        showToast('يجب أن يكون الملف من نوع .js أو .mjs أو .ts', 'error');
+                        return;
+                    }
+                    
+                    // إرسال طلب تغيير الملف الرئيسي
+                    socket.emit('change-main-file', {
+                        hostId,
+                        newMainFile: newMainFile,
+                        filePath: newMainFile
+                    });
+                    
+                    closeModal();
+                } else if (!newMainFile) {
+                    showToast('يرجى إدخال اسم الملف', 'error');
+                }
+            };
+            
+            // إغلاق عند النقر على الخلفية
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            };
+            
+            // إغلاق عند الضغط على Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeModal();
+                }
+            });
+        }
+
+        // Bulk actions
+        document.getElementById('delete-selected').addEventListener('click', () => {
+            if (selectedItems.size === 0) return;
+            
+            // فحص وجود node_modules في العناصر المحددة
+            const hasNodeModules = Array.from(selectedItems).some(name => 
+                name === 'node_modules' || name.includes('node_modules')
+            );
+            if (hasNodeModules) {
+                showToast('لا يمكن حذف مجلد node_modules مباشرة. استخدم "npm install" لإعادة تثبيت المكتبات', 'warning');
+                return;
+            }
+            
+            // فحص وجود config.json في العناصر المحددة
+            const hasConfigJson = Array.from(selectedItems).some(name => name === 'config.json');
+            let confirmMessage = 'حذف العناصر المحددة؟';
+            if (hasConfigJson) {
+                confirmMessage = `⚠️ تحذير: أنت على وشك حذف ملف config.json مع العناصر الأخرى!\n\nهذا الملف يحتوي على إعدادات الاستضافة المهمة.\nهل أنت متأكد من المتابعة؟`;
+            }
+            
+            if (!confirm(confirmMessage)) return;
+            const currentPathValue = document.getElementById('current-path').textContent;
+            selectedItems.forEach(name => {
+                socket.emit('delete', {
+                    hostId,
+                    path: currentPathValue === '/' ? `/${name}` : `${currentPathValue}/${name}`,
+                    isDirectory: false
+                });
+            });
+            selectedItems.clear();
+            updateSelectionBar();
+            setTimeout(() => socket.emit('get-files', { hostId, path: currentPathValue }), 400);
+        });
+
+        document.getElementById('move-selected').addEventListener('click', () => {
+            if (selectedItems.size === 0) return;
+            const currentPathValue = document.getElementById('current-path').textContent;
+            const target = prompt('أدخل المسار الهدف (مثل: /folder/subfolder):', currentPathValue);
+            if (!target) return;
+            selectedItems.forEach(name => {
+                const oldPath = currentPathValue === '/' ? `/${name}` : `${currentPathValue}/${name}`;
+                const newPath = target === '/' ? `/${name}` : `${target}/${name}`;
+                socket.emit('rename', { hostId, oldPath, newPath });
+            });
+            selectedItems.clear();
+            updateSelectionBar();
+            setTimeout(() => socket.emit('get-files', { hostId, path: target }), 400);
+        });
+
+        // إغلاق القائمة عند النقر خارجها
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.file-actions-menu')) {
+                document.querySelectorAll('.file-actions-dropdown').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+            }
+        });
+        
+        // إصلاح: إغلاق جميع القوائم عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.file-actions-dropdown').forEach(menu => {
+                menu.classList.remove('show');
+            });
+        });
+        
+        // إصلاح إضافي: إغلاق القوائم عند تحميل الملفات
+        function closeAllDropdowns() {
+            document.querySelectorAll('.file-actions-dropdown').forEach(menu => {
+                menu.classList.remove('show');
+            });
+        }
+
+        // دالة عرض الرسائل
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast-message ${type}`;
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                border-radius: 4px;
+                color: white;
+                font-weight: 500;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            if (type === 'success') {
+                toast.style.backgroundColor = '#28a745';
+            } else if (type === 'error') {
+                toast.style.backgroundColor = '#dc3545';
+            } else if (type === 'info') {
+                toast.style.backgroundColor = '#17a2b8';
+            }
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+    });
+</script>
+
+<style>
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+
+/* تصميم حاوي الملف الرئيسي */
+.main-file-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #58a6ff 0%, #79c0ff 100%);
+    padding: 12px 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(88, 166, 255, 0.2);
+    transition: all 0.3s ease;
+    border: 1px solid #30363d;
+}
+
+.main-file-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(88, 166, 255, 0.3);
+    background: linear-gradient(135deg, #79c0ff 0%, #58a6ff 100%);
+}
+
+.main-file-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.main-file-icon {
+    color: #fff;
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.main-file-name {
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    letter-spacing: 0.5px;
+}
+
+.btn-change-main-file {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    font-size: 14px;
+}
+
+.btn-change-main-file:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+}
+
+.btn-change-main-file:active {
+    transform: scale(0.95);
+}
+
+/* تصميم Modal */
+.main-file-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: modalFadeIn 0.3s ease;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    position: relative;
+    background: #161b22;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease;
+    border: 1px solid #30363d;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #58a6ff 0%, #79c0ff 100%);
+    color: #fff;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+    padding: 24px;
+    background: #161b22;
+}
+
+.form-group {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #c9d1d9;
+    font-size: 14px;
+}
+
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 12px;
+    color: #58a6ff;
+    font-size: 16px;
+    z-index: 1;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px 12px 40px;
+    border: 2px solid #30363d;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.3s ease;
+    background: #0d1117;
+    color: #c9d1d9;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #58a6ff;
+    background: #21262d;
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+}
+
+.form-input::placeholder {
+    color: #8b949e;
+}
+
+.form-hint {
+    display: block;
+    margin-top: 6px;
+    color: #8b949e;
+    font-size: 12px;
+}
+
+.modal-footer {
+    padding: 20px 24px;
+    background: #21262d;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    border-top: 1px solid #30363d;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary {
+    background: #30363d;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+}
+
+.btn-secondary:hover {
+    background: #21262d;
+    border-color: #58a6ff;
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #58a6ff 0%, #79c0ff 100%);
+    color: #fff;
+    border: 1px solid #58a6ff;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(88, 166, 255, 0.4);
+    background: linear-gradient(135deg, #79c0ff 0%, #58a6ff 100%);
+}
+
+/* Animations */
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modalSlideIn {
+    from { 
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.info-item {
+    margin-bottom: 1.5rem;
+    padding: 16px;
+    background: #161b22;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    border: 1px solid #30363d;
+    transition: all 0.3s ease;
+}
+
+.info-item:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    transform: translateY(-1px);
+    border-color: #58a6ff;
+}
+
+.info-item:last-child {
+    margin-bottom: 0;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #c9d1d9;
+    margin-bottom: 8px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* تصميم قائمة الإجراءات */
+.file-actions-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.file-action-menu-btn {
+    background: none;
+    border: none;
+    color: #8b949e;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+}
+
+.file-action-menu-btn:hover {
+    background: #21262d;
+    color: #c9d1d9;
+}
+
+.file-actions-dropdown {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    transform: translateX(10px);
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    min-width: 180px;
+    z-index: 10000;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: all 0.2s ease;
+    display: none;
+}
+
+.file-actions-dropdown.show {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateX(0);
+    display: block;
+}
+
+.file-action-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    padding: 10px 16px !important;
+    background: none !important;
+    border: none !important;
+    color: #c9d1d9 !important;
+    text-align: right !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    font-size: 14px !important;
+    border-bottom: 1px solid #21262d !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    white-space: nowrap !important;
+}
+
+.file-action-item:last-child {
+    border-bottom: none;
+}
+
+.file-action-item:hover {
+    background: #21262d;
+    color: #fff;
+}
+
+.file-action-item i {
+    font-size: 12px !important;
+    width: 16px !important;
+    text-align: center !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    color: inherit !important;
+}
+
+/* أنماط breadcrumb navigation */
+.breadcrumb-path {
+    background: var(--primary-color);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-family: monospace;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.breadcrumb-item {
+    color: white;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb-item:hover {
+    color: #ffd700;
+    text-decoration: underline;
+}
+
+.breadcrumb-item.active {
+    color: #ffd700;
+    font-weight: bold;
+}
+
+/* تحسين زر الرجوع */
+#back-button {
+    transition: all 0.2s ease;
+}
+
+#back-button:hover {
+    transform: translateX(-2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* أنماط ملف config.json */
+.file-icon.config-file {
+    color: #ffd700 !important;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    border: 2px solid #ffd700;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.file-icon.config-file:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+}
+
+.file-item[data-name="config.json"] .file-name {
+    color: #ffd700;
+    font-weight: bold;
+}
+
+</style>

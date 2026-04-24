@@ -1,0 +1,146 @@
+[
+  {
+    "id": "medamhc6",
+    "userId": "system",
+    "username": "النظام",
+    "avatar": "/img/system-avatar.png",
+    "message": "تم إنشاء التذكرة بنجاح. سيقوم فريق الدعم بالرد عليك قريباً.",
+    "timestamp": "2025-08-15T20:41:08.166Z",
+    "isSystem": true
+  },
+  {
+    "id": "medamscj",
+    "userId": "system",
+    "username": "النظام",
+    "avatar": "/img/system-avatar.png",
+    "message": "تم تغيير حالة التذكرة إلى \"open\" بواسطة 29wq",
+    "timestamp": "2025-08-15T20:41:22.433Z",
+    "isSystem": true
+  },
+  {
+    "id": "medamuu9fhp6k",
+    "userId": "1307696672473743432",
+    "username": "29wq",
+    "avatar": "https://cdn.discordapp.com/avatars/1307696672473743432/e4c7b8423f72decc96a742170ed8c239.png",
+    "message": "hi",
+    "timestamp": "2025-08-15T20:41:25.665Z",
+    "isAdmin": false
+  },
+  {
+    "id": "medamybi3abrr",
+    "userId": "1307696672473743432",
+    "username": "29wq",
+    "avatar": "https://cdn.discordapp.com/avatars/1307696672473743432/e4c7b8423f72decc96a742170ed8c239.png",
+    "message": "hi",
+    "timestamp": "2025-08-15T20:41:30.174Z",
+    "isAdmin": false
+  },
+  {
+    "id": "medand3t",
+    "userId": "system",
+    "username": "النظام",
+    "avatar": "/img/system-avatar.png",
+    "message": "تم تغيير حالة التذكرة إلى \"closed\" بواسطة 29wq",
+    "timestamp": "2025-08-15T20:41:49.335Z",
+    "isSystem": true
+  },
+  {
+    "id": "medazpv4",
+    "userId": "system",
+    "username": "النظام",
+    "avatar": "/img/system-avatar.png",
+    "message": "تم تغيير حالة التذكرة إلى \"open\" بواسطة 29wq",
+    "timestamp": "2025-08-15T20:51:25.742Z",
+    "isSystem": true
+  },
+  {
+    "id": "medazujtcmddk",
+    "userId": "1307696672473743432",
+    "username": "29wq",
+    "avatar": "https://cdn.discordapp.com/avatars/1307696672473743432/e4c7b8423f72decc96a742170ed8c239.png",
+    "message": "hi",
+    "timestamp": "2025-08-15T20:51:31.817Z",
+    "isAdmin": false
+  },
+  {
+    "id": "medb6qepsnk1k",
+    "userId": "1307696672473743432",
+    "username": "29wq",
+    "avatar": "https://cdn.discordapp.com/avatars/1307696672473743432/e4c7b8423f72decc96a742170ed8c239.png",
+    "message": "السلام عليكم",
+    "timestamp": "2025-08-15T20:56:53.041Z",
+    "isAdmin": false
+  },
+  {
+    "id": "medckl62",
+    "userId": "system",
+    "username": "النظام",
+    "avatar": "/img/system-avatar.png",
+    "message": "تم تغيير حالة التذكرة إلى \"open\" بواسطة 29wq",
+    "timestamp": "2025-08-15T21:35:39.045Z",
+    "isSystem": true
+  },
+  {
+    "id": "mfbfdj3u",
+    "userId": "system",
+    "username": "النظام",
+    "avatar": "/img/system-avatar.png",
+    "message": "تم تغيير حالة التذكرة إلى \"open\" بواسطة sara24151",
+    "timestamp": "2025-09-08T17:58:18.618Z",
+    "isSystem": true
+  },
+  {
+    "id": "mfda804v",
+    "userId": "system",
+    "username": "النظام",
+    "avatar": "/img/system-avatar.png",
+    "message": "تم تغيير حالة التذكرة إلى \"open\" بواسطة sara24151",
+    "timestamp": "2025-09-10T01:09:35.020Z",
+    "isSystem": true
+  },
+  {
+    "id": "mfda8qfo",
+    "userId": "system",
+    "username": "النظام",
+    "avatar": "/img/system-avatar.png",
+    "message": "تم تغيير حالة التذكرة إلى \"closed\" بواسطة sara24151",
+    "timestamp": "2025-09-10T01:10:09.106Z",
+    "isSystem": true
+  },
+  {
+    "id": "mfdaw17q",
+    "userId": "system",
+    "username": "النظام",
+    "avatar": "/img/system-avatar.png",
+    "message": "تم تغيير حالة التذكرة إلى \"pending\" بواسطة sara24151",
+    "timestamp": "2025-09-10T01:28:16.165Z",
+    "isSystem": true
+  },
+  {
+    "id": "mfdaw27h",
+    "userId": "system",
+    "username": "النظام",
+    "avatar": "/img/system-avatar.png",
+    "message": "تم تغيير حالة التذكرة إلى \"closed\" بواسطة sara24151",
+    "timestamp": "2025-09-10T01:28:17.452Z",
+    "isSystem": true
+  },
+  {
+    "id": "mfdaw4lo",
+    "userId": "system",
+    "username": "النظام",
+    "avatar": "/img/system-avatar.png",
+    "message": "تم تغيير حالة التذكرة إلى \"open\" بواسطة sara24151",
+    "timestamp": "2025-09-10T01:28:20.555Z",
+    "isSystem": true
+  },
+  {
+    "id": "mfdawdo5",
+    "userId": "system",
+    "username": "النظام",
+    "avatar": "/img/system-avatar.png",
+    "message": "تم تغيير حالة التذكرة إلى \"closed\" بواسطة sara24151: test",
+    "timestamp": "2025-09-10T01:28:32.309Z",
+    "isSystem": true
+  }
+]

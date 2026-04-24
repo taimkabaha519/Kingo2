@@ -1,0 +1,168 @@
+// تحديث ملف server.js
+// إضافة هذه الأسطر في بداية الملف بعد استيراد المكتبات
+
+// استيراد نماذج MongoDB
+const { connectDB } = require('./models');
+
+// استيراد الخدمات
+const { 
+    FileService, 
+    HostingService, 
+    SharedPackageService, 
+    DomainService, 
+    CreditService 
+} = require('./services');
+
+// استيراد مسارات الدفع
+const paymentRoutes = require('./routes/payment');
+
+// تحديث دالة التهيئة
+async function initialize() {
+    try {
+        // إنشاء المجلدات المطلوبة
+        createDirectories();
+        
+        // الاتصال بقاعدة البيانات
+        await connectDB();
+        console.log('📦 تم الاتصال بقاعدة البيانات MongoDB');
+        
+        // تهيئة الخادم
+        const { app, server } = require('./server');
+        webServer = server;
+        console.log(`🚀 خادم الويب يعمل على المنفذ ${config.server.port}`);
+    } catch (error) {
+        console.error('❌ فشل في تهيئة التطبيق:', error);
+    }
+}
+
+// تحديث دالة إنشاء المجلدات
+function createDirectories() {
+    const dirs = ["/tmp/hostings", "/tmp/shared_node_modules", "./data", "./backups"];
+    dirs.forEach((dir) => {
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+    });
+}
+
+// إضافة هذه الأسطر في تكوين Express
+
+// إضافة مسارات الدفع
+app.use('/api/payment', paymentRoutes);
+
+// إضافة صفحة الرصيد
+app.get('/credit', ensureAuthenticated, async (req, res) => {
+    try {
+        renderWithLayout(res, 'credit', {
+            title: 'رصيدي - HnStore',
+            user: req.user
+        });
+    } catch (error) {
+        console.error('Error rendering credit page:', error);
+        res.status(500).send('حدث خطأ أثناء تحميل الصفحة');
+    }
+});
+
+// تحديث دالة renderWithLayout لتضمين بيانات الرصيد
+function renderWithLayout(res, view, data = {}) {
+    try {
+        // إضافة بيانات إضافية
+        const renderData = {
+            ...data,
+            config: {
+                prices: config.prices
+            }
+        };
+        
+        res.render(view, renderData);
+    } catch (error) {
+        console.error(`Error rendering ${view}:`, error);
+        res.status(500).send('حدث خطأ في عرض الصفحة');
+    }
+}
+
+// تحديث دالة تشغيل الهوست لاستخدام الملفات المؤقتة من MongoDB
+async function startHosting(hostingId) {
+    try {
+        const hosting = await Hosting.findById(hostingId);
+        if (!hosting) {
+            throw new Error('الهوست غير موجود');
+        }
+        
+        // التحقق من انتهاء الصلاحية
+        if (new Date() > hosting.expiryDate) {
+            throw new Error('انتهت صلاحية الهوست');
+        }
+        
+        // إيقاف الهوست إذا كان يعمل
+        if (hosting.status === 'running' && hosting.pid) {
+            await stopHosting(hostingId);
+        }
+        
+        // استخراج الملفات إلى مجلد مؤقت
+        const tempDir = await FileService.extractToTemp(hostingId);
+        
+        // تثبيت الحزم المشتركة
+        await installSharedPackages(tempDir, hosting.serviceType);
+        
+        // تشغيل الهوست
+        return await HostingService.startHosting(hostingId);
+    } catch (error) {
+        console.error('Error starting hosting:', error);
+        throw error;
+    }
+}
+
+// دالة مساعدة لتثبيت الحزم المشتركة
+async function installSharedPackages(tempDir, serviceType) {
+    try {
+        const packageList = [];
+        
+        // تحديد الحزم المطلوبة حسب نوع الخدمة
+        if (serviceType === 'discord') {
+            packageList.push('discord.js');
+        } else if (serviceType === 'web') {
+            packageList.push('express', 'cors', 'body-parser');
+        }
+        
+        // إضافة الحزم المشتركة
+        packageList.push('axios', 'moment', 'fs-extra');
+        
+        // تثبيت الحزم
+        for (const pkg of packageList) {
+            try {
+                await SharedPackageService.installSharedPackage(pkg, null, tempDir);
+            } catch (err) {
+                console.warn(`Failed to install shared package ${pkg}, will try to install from npm`);
+            }
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Error installing shared packages:', error);
+        return false;
+    }
+}
+
+// تحديث دالة getPublicUrl لاستخدام خدمة النطاقات
+async function getPublicUrl(hosting) {
+    try {
+        if (hosting.serviceType === 'web') {
+            // محاولة الحصول على URL من النطاق المخصص
+            const domainUrl = await DomainService.getPublicUrl(hosting._id);
+            if (domainUrl) {
+                return domainUrl;
+            }
+            
+            // استخدام URL الافتراضي
+            const user = await User.findById(hosting.owner);
+            const username = user ? user.username : 'user';
+            return `/sites/${username}/${hosting.name}`;
+        }
+        
+        return null;
+    } catch (error) {
+        console.error('Error getting public URL:', error);
+        return null;
+    }
+}

@@ -1,0 +1,152 @@
+<div class="public-hosting-page fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="slide-up"><i class="fas fa-globe me-2"></i> وصول عام - <%= hosting.name %></h2>
+        <div class="slide-up" style="animation-delay: 0.1s;">
+            <a href="/" class="btn btn-outline">
+                <i class="fas fa-home me-1"></i> الرئيسية
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-2 slide-up" style="animation-delay: 0.2s;">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-info-circle me-1"></i> معلومات الاستضافة</h4>
+            </div>
+        <div class="card-body">
+                <div class="grid grid-3">
+                    <div class="info-item">
+                        <div class="info-label">الاسم</div>
+                        <div><%= hosting.name %></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">الحالة</div>
+                        <div>
+                            <span class="badge <%= hosting.status === 'running' ? 'bg-success' : 'bg-danger' %>">
+                                <%= hosting.status === 'running' ? 'نشط' : 'متوقف' %>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">المالك</div>
+                        <div class="d-flex align-items-center">
+                            <% if (hosting.owner?.avatar) { %>
+                                <img src="<%= hosting.owner.avatar %>" alt="<%= hosting.owner.username %>" class="avatar rounded-circle me-2">
+                            <% } %>
+                            <span><%= hosting.owner?.username || 'غير معروف' %></span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">ينتهي في</div>
+                        <div><%= hosting.expiryDate || '-' %></div>
+                </div>
+                    <div class="info-item">
+                        <div class="info-label">الملف الرئيسي</div>
+                        <div><%= hosting.mainFile || 'index.js' %></div>
+                </div>
+                    <div class="info-item">
+                        <div class="info-label">نوع الخدمة</div>
+                        <div class="text-capitalize"><%= hosting.serviceType || 'discord' %></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-link me-1"></i> روابط الاتصال</h4>
+            </div>
+        <div class="card-body">
+                <% if (hosting.serviceType === 'mta') { %>
+                    <div class="mb-3">
+                        <div class="info-label mb-2">رابط اتصال MTA</div>
+                        <div class="input-group">
+                            <input type="text" class="form-control" value="mtasa://<%= (process.env.SERVER_ADDRESS || 'localhost:3000').split(':')[0] %>:<%= hosting.port || 22003 %>" readonly>
+                            <button class="btn btn-outline" type="button" onclick="copyToClipboard('mtasa://<%= (process.env.SERVER_ADDRESS || 'localhost:3000').split(':')[0] %>:<%= hosting.port || 22003 %>')">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                <% } else if (hosting.serviceType === 'fivem') { %>
+                    <div class="mb-3">
+                        <div class="info-label mb-2">رابط اتصال FiveM</div>
+                        <div class="input-group">
+                            <input type="text" class="form-control" value="fivem://connect/<%= (process.env.SERVER_ADDRESS || 'localhost:3000').split(':')[0] %>:<%= hosting.port || 30120 %>" readonly>
+                            <button class="btn btn-outline" type="button" onclick="copyToClipboard('fivem://connect/<%= (process.env.SERVER_ADDRESS || 'localhost:3000').split(':')[0] %>:<%= hosting.port || 30120 %>')">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                <% } %>
+                
+                <div>
+                    <div class="info-label mb-2">عنوان IP والمنفذ</div>
+                    <div class="input-group">
+                        <% const _ip = (process.env.SERVER_ADDRESS || 'localhost:3000').split(':')[0]; %>
+                        <% const _port = hosting.port || (hosting.serviceType==='mta'?22003:(hosting.serviceType==='fivem'?30120:3000)); %>
+                        <input type="text" class="form-control" value="<%= _ip %>:<%= _port %>" readonly>
+                        <button class="btn btn-outline" type="button" onclick="copyToClipboard('<%= _ip %>:<%= _port %>')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4 slide-up" style="animation-delay: 0.3s;">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-terminal me-1"></i> آخر السجلات</h4>
+                <div class="status-indicator <%= hosting.status === 'running' ? 'running' : '' %>"></div>
+            </div>
+        </div>
+        <div class="console-wrapper">
+            <div class="console">
+                <% if (logs && logs.length) { %>
+                    <% logs.slice(-50).forEach(line => { %>
+                        <div class="console-line"><%= line %></div>
+                    <% }) %>
+                <% } else { %>
+                    <div class="console-line text-muted">لا توجد سجلات لعرضها</div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('تم نسخ النص إلى الحافظة', 'success');
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+            showToast('فشل في نسخ النص', 'error');
+        });
+    }
+    
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <div class="toast-content">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                <span>${message}</span>
+            </div>
+            <div class="toast-progress"></div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10);
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 3000);
+    }
+</script>
